@@ -1,0 +1,96 @@
+@model SemptomAnalizApp.Web.ViewModels.KayitViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="sa-auth-card sa-anim-fadein">
+        <div class="text-center mb-4">
+            <div style="width:56px;height:56px;background:var(--sa-primary-lt);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary);font-size:1.5rem;margin:0 auto 16px">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="font-size:1.4rem">Ücretsiz Hesap Oluştur</h2>
+            <p class="text-muted small">Hemen başlayın, ilk analizinizi yapın.</p>
+        </div>
+
+        <form asp-controller="Hesap" asp-action="Kayit" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0 small"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="sa-form-label" asp-for="Ad">Ad</label>
+                    <input asp-for="Ad" class="form-control" placeholder="Adınız" autofocus />
+                    <span asp-validation-for="Ad" class="text-danger" style="font-size:.78rem"></span>
+                </div>
+                <div class="col-6">
+                    <label class="sa-form-label" asp-for="Soyad">Soyad</label>
+                    <input asp-for="Soyad" class="form-control" placeholder="Soyadınız" />
+                    <span asp-validation-for="Soyad" class="text-danger" style="font-size:.78rem"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="Email">E-posta</label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="ornek@mail.com" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="Sifre">Şifre</label>
+                <input asp-for="Sifre" class="form-control" type="password" placeholder="En az 6 karakter" />
+                <span asp-validation-for="Sifre" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="SifreTekrar">Şifre Tekrar</label>
+                <input asp-for="SifreTekrar" class="form-control" type="password" placeholder="Şifrenizi tekrar girin" />
+                <span asp-validation-for="SifreTekrar" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <!-- Onay Kutuları -->
+            <div class="mb-4 rounded-3 overflow-hidden" style="border:1px solid var(--sa-border)">
+
+                <!-- 1. KVKK -->
+                <div class="p-3" style="background:var(--sa-bg-raised);border-bottom:1px solid var(--sa-border)">
+                    <div class="form-check d-flex align-items-start gap-2">
+                        <input asp-for="KvkkOnay" class="form-check-input mt-1 flex-shrink-0" type="checkbox" />
+                        <label class="form-check-label" asp-for="KvkkOnay" style="font-size:.82rem;color:var(--sa-text-sec)">
+                            <a asp-controller="Home" asp-action="Privacy" class="text-primary fw-semibold" target="_blank">
+                                Gizlilik Politikası & KVKK Aydınlatma Metni
+                            </a>'ni okudum ve kabul ediyorum. Sağlık verilerimin analiz amacıyla işleneceğini onaylıyorum.
+                        </label>
+                    </div>
+                    <span asp-validation-for="KvkkOnay" class="text-danger" style="font-size:.78rem;display:block;margin-top:4px;margin-left:24px"></span>
+                </div>
+
+                <!-- 2. Tıbbi Sorumluluk Reddi -->
+                <div class="p-3" style="background:rgba(244,63,94,0.05)">
+                    <div class="form-check d-flex align-items-start gap-2">
+                        <input asp-for="TibbiOnay" class="form-check-input mt-1 flex-shrink-0" type="checkbox"
+                               style="border-color:rgba(244,63,94,0.5)" />
+                        <label class="form-check-label" asp-for="TibbiOnay" style="font-size:.82rem;color:var(--sa-text-sec)">
+                            <i class="bi bi-exclamation-triangle-fill me-1" style="color:#F87171;font-size:.8rem"></i>
+                            Bu uygulamanın <strong style="color:var(--sa-text-pri)">tıbbi teşhis, tedavi veya tavsiye</strong>
+                            vermediğini; sonuçların yalnızca istatistiksel benzerlik analizi olduğunu anlıyor ve
+                            gerektiğinde bir sağlık profesyoneline başvuracağımı kabul ediyorum.
+                        </label>
+                    </div>
+                    <span asp-validation-for="TibbiOnay" class="text-danger" style="font-size:.78rem;display:block;margin-top:4px;margin-left:24px"></span>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-lightning-charge-fill me-2"></i>Hesap Oluştur
+            </button>
+        </form>
+
+        <div class="sa-divider"></div>
+        <p class="text-center text-muted small mb-0">
+            Zaten hesabınız var mı?
+            <a asp-controller="Hesap" asp-action="Giris" class="text-primary fw-semibold">Giriş Yap</a>
+        </p>
+    </div>
+</div>

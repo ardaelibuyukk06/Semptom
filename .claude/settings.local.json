@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/furka/OneDrive/Desktop/DENEME/**)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(tasklist /FI \"PID eq 69324\")",
+      "Bash(tasklist /FI \"IMAGENAME eq SemptomAnalizApp.Web.exe\")",
+      "Bash(find C:Usersfurka.vscodeextensionsanthropic.claude-code-2.1.84-win32-x64 -name *.md -o -name *.txt -o -name package.json)",
+      "Bash(find C:Usersfurka.vscodeextensionsanthropic.claude-code-2.1.84-win32-x64 -name *.json -type f)",
+      "Bash(pkill -f \"bot.py\")"
+    ]
+  }
+}

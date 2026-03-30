@@ -1,0 +1,425 @@
+@model SemptomAnalizApp.Web.ViewModels.AnalizSonucViewModel
+@{
+    ViewData["Title"] = "Analiz Sonucu";
+
+    string urgencyCls = Model.AciliyetRengi switch {
+        "success" => "sa-urgency-normal",
+        "warning" => "sa-urgency-izle",
+        "orange"  => "sa-urgency-dikkat",
+        "danger"  => "sa-urgency-acil",
+        _ => "sa-urgency-normal"
+    };
+    string ringCls = urgencyCls switch {
+        "sa-urgency-normal" => "sa-ring-normal",
+        "sa-urgency-izle"   => "sa-ring-izle",
+        "sa-urgency-dikkat" => "sa-ring-dikkat",
+        "sa-urgency-acil"   => "sa-ring-acil",
+        _ => "sa-ring-normal"
+    };
+}
+
+<div class="container py-4">
+
+    <!-- Header row -->
+    <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
+        <div>
+            <p class="sa-section-title mb-1">Analiz Sonucu</p>
+            <div class="d-flex align-items-center gap-2 text-muted small">
+                <i class="bi bi-calendar3"></i>
+                @Model.Tarih.ToLocalTime().ToString("dd MMMM yyyy, HH:mm")
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>Yeni Analiz
+            </a>
+            <a asp-controller="Gecmis" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-clock-history me-1"></i>Geçmiş
+            </a>
+        </div>
+    </div>
+
+    <!-- ══ TOP: Urgency Banner ════════════════════════════════════════ -->
+    <div class="sa-urgency-banner @urgencyCls mb-4 sa-anim-fadein-d1">
+        <div class="row align-items-center g-3">
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-4">
+                    <div>
+                        <div class="sa-urgency-label mb-1">@Model.AciliyetEtiketi</div>
+                        <div class="sa-department-badge">
+                            <i class="bi bi-hospital-fill me-1"></i>@Model.OnerilenBolum
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    @foreach (var s in Model.SecilmisSemptomlar.Take(6))
+                    {
+                        <span class="sa-urgency-chip">@s</span>
+                    }
+                </div>
+            </div>
+            <div class="col-md-5 text-md-end text-start d-flex flex-column align-items-md-end align-items-start gap-3 mt-md-0 mt-3">
+                <div class="sa-ring-wrapper">
+                    <svg class="sa-urgency-ring @ringCls" viewBox="0 0 120 120" width="130" height="130">
+                        <circle class="sa-ring-track" cx="60" cy="60" r="50"/>
+                        <circle class="sa-ring-fill"
+                                cx="60" cy="60" r="50"
+                                id="urgencyRingFill"
+                                data-target="@Model.AciliyetSkoru"/>
+                    </svg>
+                    <div class="sa-ring-center">
+                        <div class="sa-ring-score" id="aciliyetSkorEl" data-target="@Model.AciliyetSkoru">0</div>
+                        <div class="sa-ring-sublabel">Aciliyet</div>
+                    </div>
+                </div>
+                <div class="sa-signature">
+                    <i class="bi bi-fingerprint me-1"></i>@Model.SemptomImzasi
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ MAIN GRID ════════════════════════════════════════════════ -->
+    <div class="row g-4">
+
+        <!-- ── Sol Kolon (8/12) ── -->
+        <div class="col-md-8">
+
+            <!-- Genel Yorum -->
+            <div class="sa-genel-yorum mb-4 sa-anim-fadein-d2">
+                <p class="sa-section-title">Genel Değerlendirme</p>
+                <p class="sa-genel-yorum-text">@Model.GenelYorum</p>
+            </div>
+
+            <!-- Olası Durumlar -->
+            <div class="sa-card mb-4 sa-anim-fadein-d3">
+                <p class="sa-section-title">İstatistiksel Benzerlik Analizi</p>
+
+                <!-- Tıbbi sorumluluk reddi — kritik güvenlik uyarısı -->
+                <div class="sa-disclaimer-box mb-3">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    <span>Bu çıktılar <strong>istatistiksel benzerlik skoru</strong>dur; tıbbi teşhis, tanı veya tedavi tavsiyesi değildir. Kesin bilgi için mutlaka bir sağlık profesyoneline başvurun.</span>
+                </div>
+
+                @if (!Model.OlasiDurumlar.Any())
+                {
+                    <p class="text-muted small">Semptom kombinasyonunuz belirli bir tabloya yeterince benzerlik göstermemektedir.</p>
+                }
+                else
+                {
+                    int rank = 0;
+                    @foreach (var durum in Model.OlasiDurumlar)
+                    {
+                        rank++;
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="sa-condition-rank">@rank</span>
+                                    <span class="fw-semibold" style="font-size:.9rem">@durum.Ad</span>
+                                </div>
+                                <span class="badge bg-@durum.EtiketRengi rounded-pill">@durum.BenzerlikEtiketi</span>
+                            </div>
+                            <div class="sa-progress-bar-wrap mb-2">
+                                <div class="sa-progress-fill bar-@durum.BarRengi"
+                                     data-width="@durum.SkorYuzdesi"></div>
+                            </div>
+                            <p class="text-muted mb-0" style="font-size:.8rem">@durum.Aciklama</p>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- Neden Açıklaması -->
+            <div class="sa-card mb-4 sa-anim-fadein-d4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="sa-icon-box sa-icon-box-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                    </div>
+                    <p class="sa-section-title mb-0">Neden Bu Sonuç?</p>
+                </div>
+                <p class="sa-neden-text mb-0">@Model.NedenAciklamasi</p>
+            </div>
+
+            <!-- Günlük Öneriler -->
+            <div class="sa-card sa-anim-fadein-d5">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="sa-icon-box sa-icon-box-green">
+                        <i class="bi bi-lightbulb-fill"></i>
+                    </div>
+                    <p class="sa-section-title mb-0">Günlük Destekleyici Öneriler</p>
+                </div>
+                <div class="row g-3">
+                    @foreach (var oneri in Model.GunlukOneriler)
+                    {
+                        <div class="col-6 col-md-4">
+                            <div class="sa-suggestion-card">
+                                <div class="sa-suggestion-icon">@oneri.Ikon</div>
+                                <div class="sa-suggestion-title">@oneri.Baslik</div>
+                                <div class="sa-suggestion-text">@oneri.Metin</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <p class="text-muted mt-3 mb-0" style="font-size:.75rem">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Bu öneriler tıbbi tavsiye niteliği taşımaz; yalnızca destekleyici bilgilendirme amaçlıdır.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- ── Sağ Kolon (4/12) ── -->
+        <div class="col-md-4">
+
+            <!-- Semptom Parmak İzi -->
+            <div class="sa-card mb-4 sa-anim-fadein-d2">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="sa-icon-box sa-icon-box-info">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <p class="sa-section-title mb-0">Semptom Profili</p>
+                </div>
+                <p class="text-muted mb-3" style="font-size:.73rem">Seçilen semptomların kategori dağılımı</p>
+                <div class="sa-radar-wrap">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- BMI Kartı -->
+            @if (Model.Bmi > 0)
+            {
+                <div class="sa-card mb-4 sa-anim-fadein-d2">
+                    <p class="sa-section-title">VKİ Değerlendirmesi</p>
+                    <div class="d-flex align-items-baseline gap-2 mb-3">
+                        <span style="font-size:2.2rem;font-weight:800">@Model.Bmi.ToString("F1")</span>
+                        <span class="text-muted small">kg/m²</span>
+                        <span class="badge bg-@Model.BmiRengi ms-auto rounded-pill">@Model.BmiKategoriMetni</span>
+                    </div>
+                    <div class="sa-bmi-track mb-3" style="margin-top:4px">
+                        <div class="sa-bmi-marker" id="resultBmiMarker" data-pct="@Model.BmiYuzdesi" style="left:0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:.7rem;color:#94A3B8;margin-top:8px">
+                        <span>18.5</span><span>25</span><span>30</span><span>35+</span>
+                    </div>
+                </div>
+            }
+
+            <!-- Tekrar Skoru -->
+            <div class="sa-card mb-4 sa-anim-fadein-d3">
+                <p class="sa-section-title">Tekrar Skoru</p>
+                @if (Model.TekrarSkoru > 0)
+                {
+                    <div class="sa-repeat-badge-warn w-100 justify-content-center mb-3" style="padding:12px">
+                        <i class="bi bi-repeat fs-5"></i>
+                        <div>
+                            <div style="font-size:1.4rem;font-weight:800;line-height:1">@Model.TekrarSkoru×</div>
+                            <div style="font-size:.72rem;opacity:.8">son 30 gün</div>
+                        </div>
+                    </div>
+                    @if (Model.EnYakinTekrarGunOncesi.HasValue)
+                    {
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-clock me-1"></i>
+                            Bu semptom imzasını <strong>@Model.EnYakinTekrarGunOncesi gün önce</strong> de yaşadınız.
+                            Tekrarlayan belirtiler altta yatan bir durumu işaret edebilir.
+                        </p>
+                    }
+                }
+                else
+                {
+                    <div class="sa-repeat-badge-info w-100 justify-content-center mb-2" style="padding:12px">
+                        <i class="bi bi-check-circle fs-5"></i>
+                        <span style="font-size:.85rem">İlk kez görülüyor</span>
+                    </div>
+                    <p class="text-muted small mb-0">Bu semptom kombinasyonu son 30 gün içinde daha önce kaydedilmedi.</p>
+                }
+                <div class="sa-divider"></div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-fingerprint text-muted"></i>
+                    <div>
+                        <div style="font-size:.7rem;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Semptom İmzası</div>
+                        <code class="sa-signature d-inline-block mt-1">@Model.SemptomImzasi</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uyarı Sinyalleri -->
+            @if (Model.UyariGostergeleri.Any())
+            {
+                <div class="sa-warning-box sa-anim-fadein-d4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="sa-icon-box sa-icon-box-red">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <p class="sa-section-title mb-0">Uyarı Sinyalleri</p>
+                    </div>
+                    @foreach (var uyari in Model.UyariGostergeleri)
+                    {
+                        <div class="sa-warning-item">
+                            <i class="bi bi-dot fs-5 flex-shrink-0" style="margin-top:-2px"></i>
+                            <span>@uyari</span>
+                        </div>
+                    }
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- ══ ACİL BAŞVURU REHBERİ ════════════════════════════════════ -->
+    <div class="sa-emergency-guide mt-4 sa-anim-fadein-d5">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="sa-icon-box sa-icon-box-red">
+                <i class="bi bi-hospital-fill"></i>
+            </div>
+            <div>
+                <p class="sa-section-title mb-0">Ne Zaman Acile Gitmelisiniz?</p>
+                <p class="text-muted mb-0" style="font-size:.75rem">Bu liste genel bir kılavuzdur; kendi durumunuzu değerlendiren tek kişi siz ve doktorunuzsunuz.</p>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="sa-emergency-card sa-emergency-red">
+                    <div class="sa-emergency-card-header">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>Hemen 112'yi Arayın
+                    </div>
+                    <ul class="sa-emergency-list">
+                        <li>Göğüs ağrısı + nefes darlığı birlikte</li>
+                        <li>Ani yüz veya kol güçsüzlüğü, konuşma bozukluğu</li>
+                        <li>Bilinç kaybı veya ağır baygınlık</li>
+                        <li>Şiddetli alerjik reaksiyon (anafilaksi)</li>
+                        <li>Kontrol edilemeyen kanama</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sa-emergency-card sa-emergency-orange">
+                    <div class="sa-emergency-card-header">
+                        <i class="bi bi-clock-fill me-2"></i>Aynı Gün Başvurun
+                    </div>
+                    <ul class="sa-emergency-list">
+                        <li>Ateş 39°C üzerinde veya çocukta 38°C üzerinde</li>
+                        <li>Nefes almada giderek kötüleşen güçlük</li>
+                        <li>Kanlı dışkı, idrar veya kusma</li>
+                        <li>Şiddetli karın ağrısı (geçmeyen)</li>
+                        <li>Belirsiz başlangıçlı şiddetli baş ağrısı</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sa-emergency-card sa-emergency-yellow">
+                    <div class="sa-emergency-card-header">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Birkaç Gün İçinde Randevu
+                    </div>
+                    <ul class="sa-emergency-list">
+                        <li>Belirtiler 5 günden uzun sürüyor</li>
+                        <li>OTC ilaçlar işe yaramıyor</li>
+                        <li>Benzer belirtiler son 1 ayda tekrarladı</li>
+                        <li>Kronik hastalığınızla bağlantılı yeni semptom</li>
+                        <li>Açıklanamayan kilo kaybı veya yorgunluk</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3 p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+            <p class="mb-0 text-muted" style="font-size:.75rem">
+                <i class="bi bi-info-circle me-2" style="color:var(--sa-primary-light)"></i>
+                <strong style="color:var(--sa-text-sec)">Önemli Hatırlatma:</strong>
+                Bu tablo genel bir bilgi rehberidir ve bireysel tıbbi değerlendirmenin yerini tutmaz.
+                Kendinizi iyi hissetmiyorsanız veya tereddüt yaşıyorsanız, erken doktor başvurusu her zaman daha güvenlidir.
+                Herhangi bir sağlık kuruluşu <strong style="color:var(--sa-text-sec)">ALO 182</strong> (Sağlık Bakanlığı danışma hattı) üzerinden de ulaşılabilir.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── Alt Butonlar ── -->
+    <div class="d-flex gap-3 mt-4 sa-anim-fadein-d5">
+        <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Yeni Analiz
+        </a>
+        <a asp-controller="Gecmis" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-clock-history me-2"></i>Geçmişe Dön
+        </a>
+        <a asp-controller="Profil" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-person-circle me-2"></i>Profilimi Düzenle
+        </a>
+    </div>
+
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const etiketler = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RadarEtiketler));
+    const veriler   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RadarVeriler));
+
+    const ctx = document.getElementById('radarChart');
+    if (!ctx) return;
+
+    // Veri sıfırsa grafik anlamsız — hafif önleme
+    const toplamSemptom = veriler.reduce((a, b) => a + b, 0);
+    if (toplamSemptom === 0) {
+        ctx.closest('.sa-radar-wrap').style.display = 'none';
+        return;
+    }
+
+    const maks = Math.max(...veriler);
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: etiketler,
+            datasets: [{
+                data: veriler,
+                borderColor:     'rgba(114,116,243,0.90)',
+                borderWidth:     2,
+                backgroundColor: 'rgba(114,116,243,0.15)',
+                pointBackgroundColor: 'rgba(114,116,243,1)',
+                pointBorderColor:     'rgba(114,116,243,0.6)',
+                pointRadius:     3,
+                pointHoverRadius: 5,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 800, easing: 'easeInOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0D1628',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    titleColor: '#EEF2FF',
+                    bodyColor: '#B8CCE0',
+                    callbacks: {
+                        label: ctx => `${ctx.parsed.r} semptom`
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    min: 0,
+                    suggestedMax: Math.max(3, maks),
+                    ticks: {
+                        display: false,
+                        stepSize: 1,
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.06)',
+                    },
+                    angleLines: {
+                        color: 'rgba(255,255,255,0.06)',
+                    },
+                    pointLabels: {
+                        color: '#9BB0C8',
+                        font: { size: 10, family: 'Inter' },
+                    }
+                }
+            }
+        }
+    });
+}());
+</script>
+}

@@ -1,0 +1,32 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+
+## User Secrets & local config (NEVER commit these)
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+**/secrets.json
+**/.env
+**/.env.*
+
+## EF Core migrations scaffold output (keep migrations, ignore these)
+*.sqlite
+*.db
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Publish output
+**/publish/
+**/PublishProfiles/
+
+## Rider / JetBrains
+.idea/
+*.sln.iml

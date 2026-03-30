@@ -1,0 +1,104 @@
+@model SemptomAnalizApp.Web.ViewModels.GecmisViewModel
+@{
+    ViewData["Title"] = "Geçmişim";
+}
+
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
+        <div>
+            <p class="sa-section-title">Analiz Geçmişi</p>
+            <h1 class="sa-page-title">Geçmiş Analizlerim</h1>
+        </div>
+        <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Yeni Analiz
+        </a>
+    </div>
+
+    @if (!Model.YilGruplari.Any())
+    {
+        <div class="sa-card text-center py-5 sa-anim-fadein-d1">
+            <i class="bi bi-clipboard-pulse text-muted" style="font-size:3.5rem;opacity:.25"></i>
+            <p class="text-muted mt-3 mb-3">Henüz analiz kaydınız bulunmuyor.</p>
+            <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>İlk Analizini Başlat
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var yil in Model.YilGruplari)
+        {
+            <div class="mb-5 sa-anim-fadein-d2">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="fw-bold" style="font-size:1.1rem">@yil.Yil</span>
+                    <div class="flex-grow-1" style="height:1px;background:var(--sa-border)"></div>
+                </div>
+
+                @foreach (var ay in yil.AyGruplari)
+                {
+                    <div class="mb-4">
+                        <p class="sa-section-title mb-3 ms-1">@ay.AyAdi</p>
+                        <div class="sa-timeline">
+                            @foreach (var kayit in ay.Kayitlar)
+                            {
+                                string dotCls = kayit.AciliyetRengi switch {
+                                    "success" => "dot-success",
+                                    "warning" => "dot-warning",
+                                    "danger"  => "dot-danger",
+                                    "info"    => "dot-info",
+                                    _ => "dot-success"
+                                };
+                                <div class="sa-timeline-item">
+                                    <div class="sa-timeline-dot @dotCls"></div>
+                                    <div class="sa-timeline-card">
+                                        <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                    <span class="badge bg-@kayit.AciliyetRengi rounded-pill">@kayit.AciliyetEtiketi</span>
+                                                    <span class="text-muted small">@kayit.Tarih.ToLocalTime().ToString("dd MMM, HH:mm")</span>
+                                                    @if (!string.IsNullOrEmpty(kayit.OnerilenBolum))
+                                                    {
+                                                        <span class="text-muted small"><i class="bi bi-hospital me-1"></i>@kayit.OnerilenBolum</span>
+                                                    }
+                                                </div>
+                                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                                    @foreach (var s in kayit.Semptomlar.Take(5))
+                                                    {
+                                                        <span class="sa-tag">@s</span>
+                                                    }
+                                                    @if (kayit.Semptomlar.Count > 5)
+                                                    {
+                                                        <span class="sa-tag" style="opacity:.7">+@(kayit.Semptomlar.Count - 5)</span>
+                                                    }
+                                                </div>
+                                                <div class="mt-2">
+                                                    <code class="sa-signature" style="font-size:.68rem">
+                                                        <i class="bi bi-fingerprint me-1"></i>@kayit.SemptomImzasi
+                                                    </code>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-end gap-2">
+                                                <div style="font-size:1.4rem;font-weight:800;color:var(--sa-text)">@kayit.AciliyetSkoru</div>
+                                                <div class="sa-progress-bar-wrap" style="width:60px">
+                                                    <div class="sa-progress-fill bar-@kayit.AciliyetRengi"
+                                                         data-width="@kayit.AciliyetSkoru"></div>
+                                                </div>
+                                                @if (kayit.SonucId > 0)
+                                                {
+                                                    <a asp-controller="Analiz" asp-action="Sonuc" asp-route-id="@kayit.SonucId"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        Detay <i class="bi bi-arrow-right ms-1"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

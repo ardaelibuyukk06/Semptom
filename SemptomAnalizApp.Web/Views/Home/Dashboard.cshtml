@@ -1,0 +1,285 @@
+@model SemptomAnalizApp.Web.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Panel";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
+        <div>
+            <h1 class="sa-page-title mb-1">Merhaba, @Model.KullaniciAd <span style="font-size:1.4rem">👋</span></h1>
+            <p class="text-muted small mb-0">Sağlık panelinize hoş geldiniz</p>
+        </div>
+        <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Yeni Analiz
+        </a>
+    </div>
+
+    @if (!Model.ProfilTamamlandi)
+    {
+        <div class="sa-alert-warning mb-4 sa-anim-fadein-d1">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-circle fs-4" style="color:#FCD34D;flex-shrink:0"></i>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Sağlık profiliniz eksik</div>
+                    <div class="text-muted small">Profil bilgilerinizi ekleyerek analiz sonuçlarını kişiselleştirin.</div>
+                </div>
+                <a asp-controller="Profil" asp-action="Index" class="btn btn-sm btn-warning">Profili Tamamla</a>
+            </div>
+        </div>
+    }
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3 sa-anim-fadein-d1">
+            <div class="sa-stat-card sa-tilt">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <div class="sa-stat-value sa-counter" data-target="@Model.ToplamAnalizSayisi">0</div>
+                        <div class="sa-stat-label">Toplam Analiz</div>
+                    </div>
+                    <div class="sa-stat-icon sa-icon-blue">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d2">
+            <div class="sa-stat-card sa-tilt">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <div class="sa-stat-value" style="font-size:1.1rem;padding-top:4px">
+                            @(Model.SonAnalizTarihi.HasValue
+                                ? (DateTime.UtcNow - Model.SonAnalizTarihi.Value).Days == 0
+                                    ? "Bugün"
+                                    : (DateTime.UtcNow - Model.SonAnalizTarihi.Value).Days + " gün"
+                                : "—")
+                        </div>
+                        <div class="sa-stat-label">Son Analiz</div>
+                    </div>
+                    <div class="sa-stat-icon sa-icon-green">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d3">
+            <div class="sa-stat-card sa-tilt">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <div class="sa-stat-value sa-counter" data-target="@Model.TekrarlayaniSemptomSayisi">0</div>
+                        <div class="sa-stat-label">Tekrarlayan</div>
+                    </div>
+                    <div class="sa-stat-icon sa-icon-amber">
+                        <i class="bi bi-repeat"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d4">
+            <div class="sa-stat-card sa-tilt">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <div class="sa-stat-value" style="font-size:1rem;padding-top:6px">
+                            <span class="badge bg-@Model.RiskRengi rounded-pill px-3">@Model.RiskOzeti</span>
+                        </div>
+                        <div class="sa-stat-label mt-1">Risk Özeti</div>
+                    </div>
+                    <div class="sa-stat-icon sa-icon-red">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aciliyet Trendi -->
+    @if (Model.TrendSkorlar.Count > 1)
+    {
+        <div class="sa-card sa-trend-card mb-4 sa-anim-fadein-d4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="sa-stat-icon sa-icon-blue" style="width:32px;height:32px;font-size:1rem">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div>
+                        <p class="sa-section-title mb-0">Aciliyet Trendi</p>
+                        <span class="text-muted" style="font-size:.72rem">Son @Model.TrendSkorlar.Count analiz</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @{
+                        int ilk = Model.TrendSkorlar.First();
+                        int son = Model.TrendSkorlar.Last();
+                        string trendIkon  = son > ilk + 5 ? "bi-arrow-up-right"  : son < ilk - 5 ? "bi-arrow-down-right" : "bi-arrow-right";
+                        string trendRenk  = son > ilk + 5 ? "#F87171" : son < ilk - 5 ? "#34D399" : "#9BB0C8";
+                        string trendMetin = son > ilk + 5 ? "Artış var" : son < ilk - 5 ? "İyileşiyor" : "Stabil";
+                    }
+                    <i class="bi @trendIkon" style="color:@trendRenk;font-size:1rem"></i>
+                    <span style="font-size:.78rem;color:@trendRenk;font-weight:600">@trendMetin</span>
+                </div>
+            </div>
+            <div style="position:relative;height:110px">
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="d-flex justify-content-between mt-2" style="font-size:.68rem;color:var(--sa-muted)">
+                <span>←  Eski</span>
+                <span>Yeni  →</span>
+            </div>
+        </div>
+    }
+
+    <!-- Son Analizler -->
+    <div class="sa-card sa-anim-fadein-d5">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <p class="sa-section-title mb-0">Son Analizler</p>
+            <a asp-controller="Gecmis" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                Tümünü Gör <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        @if (!Model.SonAnalizler.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-clipboard-pulse text-muted" style="font-size:3rem;opacity:.3"></i>
+                <p class="text-muted mt-3 mb-3">Henüz analiz yapılmadı.</p>
+                <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>İlk Analizini Yap
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table sa-admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Semptomlar</th>
+                            <th>Aciliyet</th>
+                            <th>Skor</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var analiz in Model.SonAnalizler)
+                        {
+                            <tr>
+                                <td class="text-muted small">@analiz.Tarih.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                                <td>
+                                    <span class="small fw-semibold">@analiz.AnaSemptomlar</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@analiz.AciliyetRengi rounded-pill">@analiz.AciliyetEtiketi</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="sa-progress-bar-wrap" style="width:70px">
+                                            <div class="sa-progress-fill bar-@analiz.AciliyetRengi" data-width="@analiz.AciliyetSkoru"></div>
+                                        </div>
+                                        <small class="text-muted">@analiz.AciliyetSkoru</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a asp-controller="Analiz" asp-action="Sonuc" asp-route-id="@analiz.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.TrendSkorlar.Count > 1)
+{
+    @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+    (function () {
+        const skorlar  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendSkorlar));
+        const etiketler = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendEtiketler));
+
+        const ctx = document.getElementById('trendChart');
+        if (!ctx) return;
+
+        // Çizgi rengini son trende göre belirle
+        const ilk = skorlar[0], son = skorlar[skorlar.length - 1];
+        const cizgiRenk = son > ilk + 5 ? '#F87171' : son < ilk - 5 ? '#34D399' : '#7274F3';
+
+        // Gradyan fill
+        const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 110);
+        grad.addColorStop(0,   cizgiRenk.replace(')', ', 0.22)').replace('rgb', 'rgba').replace('#', 'rgba(').replace('rgba(F87171', 'rgba(248,113,113').replace('rgba(34D399', 'rgba(52,211,153').replace('rgba(7274F3', 'rgba(114,116,243'));
+        grad.addColorStop(1,   'rgba(7,12,26,0)');
+
+        // Gradient oluşturma (hex → rgba dönüşüm sorununu önle)
+        const gradMap = {
+            '#F87171': ['rgba(248,113,113,0.22)', 'rgba(248,113,113,0)'],
+            '#34D399': ['rgba(52,211,153,0.22)',  'rgba(52,211,153,0)'],
+            '#7274F3': ['rgba(114,116,243,0.22)', 'rgba(114,116,243,0)'],
+        };
+        const [gradTop, gradBot] = gradMap[cizgiRenk];
+        const grad2 = ctx.getContext('2d').createLinearGradient(0, 0, 0, 110);
+        grad2.addColorStop(0, gradTop);
+        grad2.addColorStop(1, gradBot);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: etiketler,
+                datasets: [{
+                    data: skorlar,
+                    borderColor: cizgiRenk,
+                    borderWidth: 2,
+                    pointRadius: skorlar.length <= 5 ? 3 : 0,
+                    pointHoverRadius: 4,
+                    pointBackgroundColor: cizgiRenk,
+                    fill: true,
+                    backgroundColor: grad2,
+                    tension: 0.4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 900, easing: 'easeInOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0D1628',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        titleColor: '#EEF2FF',
+                        bodyColor: '#B8CCE0',
+                        callbacks: {
+                            label: ctx => `Aciliyet: ${ctx.parsed.y}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#6E8FAA', font: { size: 10 }, maxRotation: 0 },
+                        border: { display: false }
+                    },
+                    y: {
+                        min: 0, max: 100,
+                        grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+                        ticks: {
+                            color: '#6E8FAA', font: { size: 10 },
+                            stepSize: 25,
+                            callback: v => v === 0 ? 'Normal' : v === 50 ? 'İzle' : v === 75 ? 'Dikkat' : v === 100 ? 'Acil' : ''
+                        },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+    }());
+    </script>
+    }
+}
