@@ -62,25 +62,6 @@
                 </div>
                 <div class="col-12">
                     <div id="bmiBox" style="display:none;background:var(--sa-bg-raised);border:1px solid var(--sa-border);border-radius:var(--sa-radius-sm);padding:16px"></div>
-                    @if (Model.HesaplananBmi.HasValue)
-                    {
-                        <div style="background:var(--sa-bg-raised);border:1px solid var(--sa-border);border-radius:var(--sa-radius-sm);padding:16px">
-                            <div class="d-flex align-items-center gap-3">
-                                <div>
-                                    <div style="font-size:1.8rem;font-weight:800;line-height:1">@Model.HesaplananBmi.Value.ToString("F1")</div>
-                                    <div class="text-muted" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em">VKİ (BMI)</div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="sa-bmi-track mb-2" style="margin-top:6px">
-                                        <div class="sa-bmi-marker" id="resultBmiMarker"
-                                             data-pct="@(Math.Min(100, Math.Max(0, (double)(Model.HesaplananBmi.Value - 15) / 30 * 100)).ToString("F1"))"
-                                             style="left:0%"></div>
-                                    </div>
-                                    <span class="badge bg-@Model.BmiRengi rounded-pill" style="font-size:.75rem">@Model.BmiKategoriMetni</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
