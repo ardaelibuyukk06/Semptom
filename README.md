@@ -79,6 +79,11 @@ cp SemptomAnalizApp.Web/appsettings.example.json SemptomAnalizApp.Web/appsetting
 dotnet run --project SemptomAnalizApp.Web
 ```
 
+Uygulama şu adreslerde çalışır:
+
+- **https://localhost:7131**
+- **http://localhost:5075**
+
 İlk çalıştırmada:
 - Veritabanı migration'ları otomatik uygulanır
 - 42 hastalık + semptom kataloğu otomatik yüklenir (DbSeeder)
