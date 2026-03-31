@@ -66,10 +66,12 @@ public static class DbSeeder
                 new() { Ad = "Terleme",           Kategori = SemptomKategorisi.Genel,    IkonKodu = "bi-droplet-fill" },
                 new() { Ad = "Yorgunluk",         Kategori = SemptomKategorisi.Genel,    IkonKodu = "bi-moon" },
                 new() { Ad = "Kilo kaybı",        Kategori = SemptomKategorisi.Genel,    IkonKodu = "bi-graph-down" },
-                new() { Ad = "Döküntü",           Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-circle-square" },
-                new() { Ad = "Kaşıntı",           Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-hand-index" },
-                new() { Ad = "Kızarıklık",        Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-circle-fill" },
-                new() { Ad = "Göğüs ağrısı",      Kategori = SemptomKategorisi.Kalp,     IkonKodu = "bi-heart-pulse" },
+                new() { Ad = "Döküntü",                  Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-circle-square" },
+                new() { Ad = "Kaşıntı",                  Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-hand-index" },
+                new() { Ad = "Kızarıklık",               Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-circle-fill" },
+                new() { Ad = "Kurdeşen",                 Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-bandaid" },
+                new() { Ad = "Deride soyulma / kuruluk", Kategori = SemptomKategorisi.Deri,     IkonKodu = "bi-layers" },
+                new() { Ad = "Göğüs ağrısı",             Kategori = SemptomKategorisi.Kalp,     IkonKodu = "bi-heart-pulse" },
                 new() { Ad = "Çarpıntı",          Kategori = SemptomKategorisi.Kalp,     IkonKodu = "bi-activity" },
                 new() { Ad = "Baygınlık hissi",   Kategori = SemptomKategorisi.Kalp,     IkonKodu = "bi-person-down" },
             };
@@ -114,11 +116,13 @@ public static class DbSeeder
                 new() { Ad = "Terleme",           KritikMi = false, Kategori = "Genel" },
                 new() { Ad = "Yorgunluk",         KritikMi = false, Kategori = "Genel" },
                 new() { Ad = "Kilo kaybı",        KritikMi = false, Kategori = "Genel" },
-                // Deri (27-29)
-                new() { Ad = "Döküntü",           KritikMi = false, Kategori = "Deri" },
-                new() { Ad = "Kaşıntı",           KritikMi = false, Kategori = "Deri" },
-                new() { Ad = "Kızarıklık",        KritikMi = false, Kategori = "Deri" },
-                // Kalp (30-32)
+                // Deri (27-31)
+                new() { Ad = "Döküntü",                  KritikMi = false, Kategori = "Deri" },
+                new() { Ad = "Kaşıntı",                  KritikMi = false, Kategori = "Deri" },
+                new() { Ad = "Kızarıklık",               KritikMi = false, Kategori = "Deri" },
+                new() { Ad = "Kurdeşen",                 KritikMi = false, Kategori = "Deri" },
+                new() { Ad = "Deride soyulma / kuruluk", KritikMi = false, Kategori = "Deri" },
+                // Kalp (32-34)
                 new() { Ad = "Göğüs ağrısı",     KritikMi = true,  Kategori = "Kalp" },
                 new() { Ad = "Çarpıntı",          KritikMi = false, Kategori = "Kalp" },
                 new() { Ad = "Baygınlık hissi",   KritikMi = true,  Kategori = "Kalp" },
@@ -148,6 +152,88 @@ public static class DbSeeder
             await context.SaveChangesAsync();
         }
 
+        // ── Eksik Deri Semptomları Ekle (Mevcut DB Güncellemesi) ─────────
+        var yeniDeriSemptomlari = new[]
+        {
+            new { Ad = "Kurdeşen",                  KritikMi = false, Kategori = "Deri", KategoriEnum = SemptomKategorisi.Deri, IkonKodu = "bi-bandaid"  },
+            new { Ad = "Deride soyulma / kuruluk",  KritikMi = false, Kategori = "Deri", KategoriEnum = SemptomKategorisi.Deri, IkonKodu = "bi-layers"   },
+        };
+        foreach (var item in yeniDeriSemptomlari)
+        {
+            if (!await context.Semptomlar.AnyAsync(s => s.Ad == item.Ad))
+            {
+                var semptom = new Semptom { Ad = item.Ad, KritikMi = item.KritikMi, Kategori = item.Kategori };
+                context.Semptomlar.Add(semptom);
+                await context.SaveChangesAsync();
+            }
+            if (!await context.SemptomKatalog.AnyAsync(sk => sk.Ad == item.Ad))
+            {
+                var semptomId = await context.Semptomlar
+                    .Where(s => s.Ad == item.Ad)
+                    .Select(s => (int?)s.Id)
+                    .FirstOrDefaultAsync();
+                context.SemptomKatalog.Add(new SemptomKatalog
+                {
+                    Ad        = item.Ad,
+                    Kategori  = item.KategoriEnum,
+                    IkonKodu  = item.IkonKodu,
+                    SemptomId = semptomId
+                });
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // ── Yeni Semptomlar için Hastalık İlişkileri (Mevcut DB) ─────────
+        var kurdesenSemptomId = await context.Semptomlar
+            .Where(s => s.Ad == "Kurdeşen")
+            .Select(s => (int?)s.Id)
+            .FirstOrDefaultAsync();
+        var soyulmaSemptomId = await context.Semptomlar
+            .Where(s => s.Ad == "Deride soyulma / kuruluk")
+            .Select(s => (int?)s.Id)
+            .FirstOrDefaultAsync();
+
+        if (kurdesenSemptomId.HasValue || soyulmaSemptomId.HasValue)
+        {
+            var hastalikMap = await context.Hastaliklar
+                .Where(h => new[] {
+                    "Ürtiker (Kurdeşen)", "Kontakt Dermatit (Egzama)",
+                    "Alerjik Reaksiyon / Alerjik Rinit", "Zona (Herpes Zoster)",
+                    "Hipotiroidizm", "Diyabet Tip 2 (Belirtileri)"
+                }.Contains(h.Ad))
+                .ToDictionaryAsync(h => h.Ad, h => h.Id);
+
+            var yeniIliskiler = new List<HastalikSemptom>();
+
+            async Task EkleEksikIliski(int hastalikId, int semptomId, int agirlik)
+            {
+                if (!await context.HastalikSemptomlar.AnyAsync(hs => hs.HastalikId == hastalikId && hs.SemptomId == semptomId))
+                    yeniIliskiler.Add(new() { HastalikId = hastalikId, SemptomId = semptomId, Agirlik = agirlik });
+            }
+
+            if (kurdesenSemptomId.HasValue)
+            {
+                var kid = kurdesenSemptomId.Value;
+                if (hastalikMap.TryGetValue("Ürtiker (Kurdeşen)",               out var hId)) await EkleEksikIliski(hId, kid, 10);
+                if (hastalikMap.TryGetValue("Kontakt Dermatit (Egzama)",         out     hId)) await EkleEksikIliski(hId, kid,  7);
+                if (hastalikMap.TryGetValue("Alerjik Reaksiyon / Alerjik Rinit", out     hId)) await EkleEksikIliski(hId, kid,  9);
+            }
+            if (soyulmaSemptomId.HasValue)
+            {
+                var sid = soyulmaSemptomId.Value;
+                if (hastalikMap.TryGetValue("Kontakt Dermatit (Egzama)",         out var hId)) await EkleEksikIliski(hId, sid, 10);
+                if (hastalikMap.TryGetValue("Hipotiroidizm",                     out     hId)) await EkleEksikIliski(hId, sid,  8);
+                if (hastalikMap.TryGetValue("Diyabet Tip 2 (Belirtileri)",        out     hId)) await EkleEksikIliski(hId, sid,  6);
+                if (hastalikMap.TryGetValue("Zona (Herpes Zoster)",              out     hId)) await EkleEksikIliski(hId, sid,  5);
+            }
+
+            if (yeniIliskiler.Count > 0)
+            {
+                await context.HastalikSemptomlar.AddRangeAsync(yeniIliskiler);
+                await context.SaveChangesAsync();
+            }
+        }
+
         // ── Teşhis Motoru: Hastalıklar + Ağırlıklar (42 hastalık) ──────
         // Semptom ID referansı (Semptom.Id = SemptomKatalog.Id, aynı sırada seeded):
         // 1=BaşAğrısı 2=BoyunTutulması 3=BaşDönmesi 4=KulakAğrısı 5=BoğazAğrısı
@@ -155,8 +241,8 @@ public static class DbSeeder
         // 11=KarınAğrısı 12=Bulantı 13=Kusma 14=İshal 15=Kabızlık 16=İştahsızlık
         // 17=EklemAğrısı 18=KasAğrısı 19=SırtAğrısı 20=Şişlik
         // 21=Ateş 22=Halsizlik 23=Titreme 24=Terleme 25=Yorgunluk 26=KiloKaybı
-        // 27=Döküntü 28=Kaşıntı 29=Kızarıklık
-        // 30=GöğüsAğrısı 31=Çarpıntı 32=BaygınlıkHissi
+        // 27=Döküntü 28=Kaşıntı 29=Kızarıklık 30=Kurdeşen 31=DerideSoyulmaKuruluk
+        // 32=GöğüsAğrısı 33=Çarpıntı 34=BaygınlıkHissi
         if (!await context.Hastaliklar.AnyAsync())
         {
             // ── SOLUNUM SİSTEMİ ────────────────────────────────────────
@@ -468,6 +554,7 @@ public static class DbSeeder
                 new() { HastalikId = hipotir.Id,  SemptomId = 17, Agirlik = 5  }, // Eklem ağrısı
                 new() { HastalikId = hipotir.Id,  SemptomId = 20, Agirlik = 4  }, // Şişlik (yüz)
                 new() { HastalikId = hipotir.Id,  SemptomId = 1,  Agirlik = 4  }, // Baş ağrısı
+                new() { HastalikId = hipotir.Id,  SemptomId = 31, Agirlik = 8  }, // Deride soyulma / kuruluk
 
                 // HİPERTİROİDİZM
                 new() { HastalikId = hipertir.Id, SemptomId = 31, Agirlik = 9  }, // Çarpıntı
@@ -484,6 +571,7 @@ public static class DbSeeder
                 new() { HastalikId = diabet.Id,   SemptomId = 3,  Agirlik = 4  }, // Baş dönmesi
                 new() { HastalikId = diabet.Id,   SemptomId = 28, Agirlik = 4  }, // Kaşıntı
                 new() { HastalikId = diabet.Id,   SemptomId = 24, Agirlik = 4  }, // Terleme
+                new() { HastalikId = diabet.Id,   SemptomId = 31, Agirlik = 6  }, // Deride soyulma / kuruluk
 
                 // MONONÜKLEOz
                 new() { HastalikId = mono.Id,     SemptomId = 5,  Agirlik = 9  }, // Boğaz ağrısı
@@ -512,6 +600,7 @@ public static class DbSeeder
                 new() { HastalikId = alerji.Id,   SemptomId = 28, Agirlik = 9  }, // Kaşıntı
                 new() { HastalikId = alerji.Id,   SemptomId = 27, Agirlik = 8  }, // Döküntü
                 new() { HastalikId = alerji.Id,   SemptomId = 29, Agirlik = 7  }, // Kızarıklık
+                new() { HastalikId = alerji.Id,   SemptomId = 30, Agirlik = 9  }, // Kurdeşen
                 new() { HastalikId = alerji.Id,   SemptomId = 8,  Agirlik = 7  }, // Burun akıntısı
                 new() { HastalikId = alerji.Id,   SemptomId = 9,  Agirlik = 6  }, // Burun tıkanıklığı
                 new() { HastalikId = alerji.Id,   SemptomId = 7,  Agirlik = 4  }, // Nefes darlığı
@@ -556,6 +645,7 @@ public static class DbSeeder
                 new() { HastalikId = urtiker.Id,  SemptomId = 28, Agirlik = 10 }, // Kaşıntı
                 new() { HastalikId = urtiker.Id,  SemptomId = 27, Agirlik = 9  }, // Döküntü
                 new() { HastalikId = urtiker.Id,  SemptomId = 29, Agirlik = 8  }, // Kızarıklık
+                new() { HastalikId = urtiker.Id,  SemptomId = 30, Agirlik = 10 }, // Kurdeşen (tanımlayıcı semptom)
                 new() { HastalikId = urtiker.Id,  SemptomId = 20, Agirlik = 6  }, // Şişlik (anjioödem)
                 new() { HastalikId = urtiker.Id,  SemptomId = 7,  Agirlik = 4  }, // Nefes darlığı (anafilaksi riski)
 
@@ -563,11 +653,14 @@ public static class DbSeeder
                 new() { HastalikId = kontakt.Id,  SemptomId = 28, Agirlik = 10 }, // Kaşıntı
                 new() { HastalikId = kontakt.Id,  SemptomId = 27, Agirlik = 9  }, // Döküntü
                 new() { HastalikId = kontakt.Id,  SemptomId = 29, Agirlik = 8  }, // Kızarıklık
+                new() { HastalikId = kontakt.Id,  SemptomId = 30, Agirlik = 7  }, // Kurdeşen
+                new() { HastalikId = kontakt.Id,  SemptomId = 31, Agirlik = 10 }, // Deride soyulma / kuruluk
 
                 // ZONA
                 new() { HastalikId = zona.Id,     SemptomId = 27, Agirlik = 9  }, // Döküntü (band tarzı)
                 new() { HastalikId = zona.Id,     SemptomId = 28, Agirlik = 8  }, // Kaşıntı
                 new() { HastalikId = zona.Id,     SemptomId = 29, Agirlik = 7  }, // Kızarıklık
+                new() { HastalikId = zona.Id,     SemptomId = 31, Agirlik = 5  }, // Deride soyulma / kuruluk
                 new() { HastalikId = zona.Id,     SemptomId = 19, Agirlik = 6  }, // Sırt/yanı ağrısı
                 new() { HastalikId = zona.Id,     SemptomId = 21, Agirlik = 4  }, // Ateş
                 new() { HastalikId = zona.Id,     SemptomId = 22, Agirlik = 4  }, // Halsizlik
