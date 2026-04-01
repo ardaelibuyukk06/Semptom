@@ -91,6 +91,23 @@
                 <p class="sa-genel-yorum-text">@Model.GenelYorum</p>
             </div>
 
+            @if (!string.IsNullOrWhiteSpace(Model.ClaudeYorumu))
+            {
+                <!-- Claude AI Yorumu -->
+                <div class="sa-card mb-4 sa-anim-fadein-d2" style="border-left: 3px solid var(--sa-primary-light);">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7274f3,#a78bfa);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-stars" style="color:#fff;font-size:14px;"></i>
+                        </div>
+                        <div>
+                            <p class="sa-section-title mb-0">Yapay Zeka Değerlendirmesi</p>
+                            <span class="text-muted" style="font-size:11px;">Claude AI · Yalnızca bilgi amaçlıdır</span>
+                        </div>
+                    </div>
+                    <p style="color:var(--sa-text-sec);line-height:1.7;font-size:0.95rem;margin:0;">@Model.ClaudeYorumu</p>
+                </div>
+            }
+
             <!-- Olası Durumlar -->
             <div class="sa-card mb-4 sa-anim-fadein-d3">
                 <p class="sa-section-title">İstatistiksel Benzerlik Analizi</p>

@@ -25,5 +25,8 @@ public class AnalizSonucu : BaseEntity
     public string GunlukOnerilerJson { get; set; } = "[]";
     public string UyariGostergeleriJson { get; set; } = "[]";
 
+    // Claude AI yorumu (opsiyonel — API anahtarı yoksa null)
+    public string? ClaudeYorumu { get; set; }
+
     public ICollection<OlasiDurum> OlasiDurumlar { get; set; } = [];
 }

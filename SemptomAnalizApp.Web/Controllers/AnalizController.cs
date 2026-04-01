@@ -207,6 +207,7 @@ public class AnalizController(
             SecilmisSemptomlar = sonuc.AnalizOturumu.AnalizSemptomlari
                 .Select(s => s.SemptomKatalog?.Ad ?? "")
                 .ToList(),
+            ClaudeYorumu   = sonuc.ClaudeYorumu,
             RadarEtiketler = radarEtiketler,
             RadarVeriler   = radarVeriler,
         };

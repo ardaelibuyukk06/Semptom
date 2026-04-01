@@ -61,6 +61,9 @@ public class AnalizSonucViewModel
     // Seçilen semptomlar (özet için)
     public List<string> SecilmisSemptomlar { get; set; } = [];
 
+    // Claude AI yorumu (null ise gösterilmez)
+    public string? ClaudeYorumu { get; set; }
+
     // Semptom parmak izi radar grafiği için sabit sıralı kategori verisi
     public List<string> RadarEtiketler { get; set; } = [];
     public List<int>    RadarVeriler   { get; set; } = [];
