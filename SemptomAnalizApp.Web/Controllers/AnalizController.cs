@@ -207,11 +207,54 @@ public class AnalizController(
             SecilmisSemptomlar = sonuc.AnalizOturumu.AnalizSemptomlari
                 .Select(s => s.SemptomKatalog?.Ad ?? "")
                 .ToList(),
-            ClaudeYorumu   = sonuc.ClaudeYorumu,
             RadarEtiketler = radarEtiketler,
             RadarVeriler   = radarVeriler,
         };
 
+        // Claude AI bağımsız analizini deserialize et
+        if (!string.IsNullOrEmpty(sonuc.ClaudeAnalizJson))
+        {
+            try
+            {
+                var claudeAnaliz = JsonSerializer.Deserialize<ClaudeAnalizSonucDto>(
+                    sonuc.ClaudeAnalizJson,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (claudeAnaliz != null)
+                {
+                    model.ClaudeYorumu = claudeAnaliz.Yorum;
+                    model.ClaudeAnalizDurumlar = claudeAnaliz.OnerdigiDurumlar?
+                        .Select(d => new ClaudeAnalizSatiri
+                        {
+                            Ad         = d.Ad ?? "",
+                            Aciklama   = d.Aciklama ?? "",
+                            UyumDuzeyi = d.UyumDuzeyi ?? "Orta",
+                            UyumRengi  = (d.UyumDuzeyi ?? "") switch
+                            {
+                                "Yüksek" => "danger",
+                                "Orta"   => "warning",
+                                _        => "secondary"
+                            }
+                        }).ToList() ?? [];
+                }
+            }
+            catch { /* JSON parse hatası sessizce atlanır */ }
+        }
+
         return View(model);
     }
+}
+
+// DTO — sadece Claude JSON deserialize için
+file sealed class ClaudeAnalizSonucDto
+{
+    public string? Yorum { get; set; }
+    public List<ClaudeOnerdigiDurumDto>? OnerdigiDurumlar { get; set; }
+}
+
+file sealed class ClaudeOnerdigiDurumDto
+{
+    public string? Ad { get; set; }
+    public string? Aciklama { get; set; }
+    public string? UyumDuzeyi { get; set; }
 }

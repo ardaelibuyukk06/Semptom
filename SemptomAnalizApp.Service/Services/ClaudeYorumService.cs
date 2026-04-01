@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Anthropic;
 using Anthropic.Models.Messages;
 using Microsoft.Extensions.Configuration;
@@ -9,12 +10,14 @@ namespace SemptomAnalizApp.Service.Services;
 public class ClaudeYorumService(IConfiguration config, ILogger<ClaudeYorumService> logger)
     : IClaudeYorumService
 {
-    public async Task<string?> YorumOlusturAsync(ClaudeAnalizGirdisi girdi)
+    private static readonly JsonSerializerOptions _jsonOpt = new() { PropertyNameCaseInsensitive = true };
+
+    public async Task<ClaudeAnalizSonucu?> AnalizEtAsync(ClaudeAnalizGirdisi girdi)
     {
         var apiKey = config["Claude:ApiKey"];
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            logger.LogDebug("Claude API anahtarı yapılandırılmamış, AI yorumu atlandı.");
+            logger.LogDebug("Claude API anahtarı yapılandırılmamış, AI analizi atlandı.");
             return null;
         }
 
@@ -23,44 +26,75 @@ public class ClaudeYorumService(IConfiguration config, ILogger<ClaudeYorumServic
             var client = new AnthropicClient { ApiKey = apiKey };
 
             var semptomListesi = string.Join(", ", girdi.SecilmisSemptomlar);
-            var durumListesi   = string.Join(", ", girdi.OlasiDurumlar.Take(3));
-            var yasInfo        = girdi.Yas > 0 ? $"{girdi.Yas} yaşında" : "yaş bilinmiyor";
-            var cinsiyetInfo   = !string.IsNullOrEmpty(girdi.Cinsiyet) ? girdi.Cinsiyet : "cinsiyet bilinmiyor";
-            var bmiInfo        = girdi.Bmi > 0 ? $"BMI: {girdi.Bmi:F1}" : "BMI bilinmiyor";
+            var yasInfo        = girdi.Yas > 0 ? $"{girdi.Yas} yaşında" : "";
+            var cinsiyetInfo   = !string.IsNullOrEmpty(girdi.Cinsiyet) ? girdi.Cinsiyet : "";
+            var bmiInfo        = girdi.Bmi > 0 ? $"BMI {girdi.Bmi:F1}" : "";
+            var profilBilgisi  = string.Join(", ", new[] { yasInfo, cinsiyetInfo, bmiInfo }
+                                     .Where(s => !string.IsNullOrEmpty(s)));
 
-            var prompt = $"""
-                Kullanıcının semptom analiz sonuçları:
-                - Semptomlar: {semptomListesi}
-                - Olası durumlar (istatistiksel benzerlik): {durumListesi}
-                - Aciliyet düzeyi: {girdi.AciliyetEtiketi}
-                - Önerilen sağlık birimi: {girdi.OnerilenBolum}
-                - Profil: {yasInfo}, {cinsiyetInfo}, {bmiInfo}
+            var profilSatiri = string.IsNullOrEmpty(profilBilgisi) ? "" : $"\nHasta profili: {profilBilgisi}";
+            var jsonOrnek =
+                "{\n" +
+                "  \"yorum\": \"150-200 kelimelik Türkçe genel değerlendirme\",\n" +
+                "  \"onerilen_durumlar\": [\n" +
+                "    {\"ad\": \"Durum Adı\", \"aciklama\": \"Kısa açıklama (1-2 cümle)\", \"uyum\": \"Yüksek|Orta|Düşük\"}\n" +
+                "  ]\n" +
+                "}";
 
-                Bu sonuçlara dayanarak 150-200 kelimelik kısa, empatik ve anlaşılır Türkçe bir yorum yaz.
-                Kullanıcıyı rahatlatırken sağlık konusunda bilinçli olmalarını teşvik et.
-                Gerekli durumlarda doktora başvurmalarını nazikçe hatırlat.
-                Başlık veya "Yapay Zeka" gibi bir ön ek ekleme — doğrudan yoruma başla.
-                """;
+            var prompt =
+                $"Semptomlar: {semptomListesi}{profilSatiri}\n\n" +
+                "Görevin:\n" +
+                "1. Bu semptomları tıbbi bilginle bağımsız olarak değerlendir.\n" +
+                "2. Olası durumları/hastalıkları listele — veritabanıyla sınırlı değilsin, tüm tıp bilginle analiz yap.\n" +
+                "3. Her durum için kısa, anlaşılır bir açıklama ekle.\n" +
+                "4. Uyum düzeyini \"Yüksek\", \"Orta\" veya \"Düşük\" olarak belirt.\n" +
+                "5. Son olarak genel bir değerlendirme yorumu yaz.\n\n" +
+                "SADECE aşağıdaki JSON formatında cevap ver, başka hiçbir şey yazma:\n" +
+                jsonOrnek + "\n\n" +
+                "En az 3, en fazla 6 durum öner. Türkçe yaz. Tıbbi teşhis olmadığını belirt.";
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(45));
 
             var response = await client.Messages.Create(new MessageCreateParams
             {
                 Model     = Model.ClaudeOpus4_6,
-                MaxTokens = 512,
-                System    = "Sen empatik bir sağlık bilgi asistanısın. Tıbbi teşhis yapmıyorsun; yalnızca kullanıcının istatistiksel semptom analizi sonuçlarını sade ve anlaşılır Türkçe ile yorumluyorsun.",
+                MaxTokens = 1024,
+                System    = "Sen bir klinik tıp asistanısın. Semptom analizinde yalnızca JSON formatında yanıt üretiyorsun. Tıbbi teşhis yapmıyorsun; istatistiksel benzerlik ve genel bilgi sunuyorsun. Yanıtın daima geçerli JSON olmalı.",
                 Messages  =
                 [
                     new() { Role = Role.User, Content = prompt }
                 ]
             }, cancellationToken: cts.Token);
 
-            var textBlock = response.Content
+            var metin = response.Content
                 .Select(b => b.Value)
                 .OfType<TextBlock>()
-                .FirstOrDefault();
+                .FirstOrDefault()?.Text?.Trim();
 
-            return textBlock?.Text?.Trim();
+            if (string.IsNullOrEmpty(metin)) return null;
+
+            // JSON bloğunu temizle (```json ... ``` sarmalı olabilir)
+            if (metin.StartsWith("```"))
+            {
+                var start = metin.IndexOf('{');
+                var end   = metin.LastIndexOf('}');
+                if (start >= 0 && end > start)
+                    metin = metin[start..(end + 1)];
+            }
+
+            var parsed = JsonSerializer.Deserialize<ClaudeJsonResponse>(metin, _jsonOpt);
+            if (parsed == null) return null;
+
+            var durumlar = parsed.Onerilen_Durumlar?
+                .Select(d => new ClaudeOnerdigiDurum(
+                    Ad:          d.Ad ?? "",
+                    Aciklama:    d.Aciklama ?? "",
+                    UyumDuzeyi:  d.Uyum ?? "Orta"))
+                .ToList() ?? [];
+
+            return new ClaudeAnalizSonucu(
+                Yorum:            parsed.Yorum ?? "",
+                OnerdigiDurumlar: durumlar);
         }
         catch (OperationCanceledException)
         {
@@ -69,8 +103,22 @@ public class ClaudeYorumService(IConfiguration config, ILogger<ClaudeYorumServic
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Claude API yorumu oluşturulurken hata oluştu.");
+            logger.LogError(ex, "Claude API analizi sırasında hata oluştu.");
             return null;
         }
+    }
+
+    // DTO sınıfları — sadece JSON parse için
+    private sealed class ClaudeJsonResponse
+    {
+        public string? Yorum { get; set; }
+        public List<ClaudeJsonDurum>? Onerilen_Durumlar { get; set; }
+    }
+
+    private sealed class ClaudeJsonDurum
+    {
+        public string? Ad { get; set; }
+        public string? Aciklama { get; set; }
+        public string? Uyum { get; set; }
     }
 }

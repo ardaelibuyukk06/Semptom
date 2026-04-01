@@ -93,7 +93,7 @@ public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IA
         var gunlukOneriler = BelirleGunlukOneriler(semptomIdler, aciliyetSeviyesi);
         var uyarilar       = BelirleUyarilar(semptomIdler, aciliyetSeviyesi, kritikVarMi);
 
-        // 12. Claude AI yorumu (opsiyonel — API anahtarı yoksa null döner)
+        // 12. Claude AI bağımsız analizi (opsiyonel — API anahtarı yoksa null döner)
         var semptomAdlari = await db.SemptomKatalog
             .Where(sk => semptomIdler.Contains(sk.Id))
             .Select(sk => sk.Ad)
@@ -108,14 +108,18 @@ public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IA
             _ => "Normal"
         };
 
-        var claudeYorumu = await claudeYorum.YorumOlusturAsync(new ClaudeAnalizGirdisi(
+        var claudeAnaliz = await claudeYorum.AnalizEtAsync(new ClaudeAnalizGirdisi(
             SecilmisSemptomlar: semptomAdlari,
-            OlasiDurumlar:      olasiDurumlar.Take(3).Select(d => d.Ad).ToList(),
+            DbOlasiDurumlar:    olasiDurumlar.Take(3).Select(d => d.Ad).ToList(),
             AciliyetEtiketi:    aciliyetEtiketi,
             OnerilenBolum:      onerilenBolum,
             Yas:                profil?.Yas ?? 0,
             Cinsiyet:           profil?.Cinsiyet ?? "",
             Bmi:                bmi));
+
+        var claudeAnalizJson = claudeAnaliz != null
+            ? JsonSerializer.Serialize(claudeAnaliz)
+            : null;
 
         // 13. Tek transaction ile kaydet
         var oturum = new AnalizOturumu
@@ -140,7 +144,7 @@ public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IA
             BmiKategori            = bmiKat,
             GunlukOnerilerJson     = JsonSerializer.Serialize(gunlukOneriler),
             UyariGostergeleriJson  = JsonSerializer.Serialize(uyarilar),
-            ClaudeYorumu           = claudeYorumu
+            ClaudeAnalizJson       = claudeAnalizJson
         };
         db.AnalizSonuclari.Add(sonuc);
 

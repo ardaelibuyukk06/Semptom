@@ -91,20 +91,53 @@
                 <p class="sa-genel-yorum-text">@Model.GenelYorum</p>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.ClaudeYorumu))
+            @if (!string.IsNullOrWhiteSpace(Model.ClaudeYorumu) || Model.ClaudeAnalizDurumlar.Any())
             {
-                <!-- Claude AI Yorumu -->
-                <div class="sa-card mb-4 sa-anim-fadein-d2" style="border-left: 3px solid var(--sa-primary-light);">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7274f3,#a78bfa);display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-stars" style="color:#fff;font-size:14px;"></i>
+                <!-- Claude AI Bağımsız Analizi -->
+                <div class="sa-card mb-4 sa-anim-fadein-d2" style="border-top:3px solid #7274f3;">
+                    <!-- Başlık -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#7274f3,#a78bfa);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="bi bi-robot" style="color:#fff;font-size:18px;"></i>
                         </div>
                         <div>
-                            <p class="sa-section-title mb-0">Yapay Zeka Değerlendirmesi</p>
-                            <span class="text-muted" style="font-size:11px;">Claude AI · Yalnızca bilgi amaçlıdır</span>
+                            <p class="sa-section-title mb-0">Yapay Zeka Analizi</p>
+                            <span class="text-muted" style="font-size:11px;">Claude AI · Veritabanından bağımsız değerlendirme · Tıbbi teşhis değildir</span>
                         </div>
                     </div>
-                    <p style="color:var(--sa-text-sec);line-height:1.7;font-size:0.95rem;margin:0;">@Model.ClaudeYorumu</p>
+
+                    @if (Model.ClaudeAnalizDurumlar.Any())
+                    {
+                        <!-- Disclaimer -->
+                        <div class="sa-disclaimer-box mb-3">
+                            <i class="bi bi-cpu me-2"></i>
+                            <span>Aşağıdaki değerlendirme <strong>yapay zekanın kendi tıp bilgisine</strong> dayanmaktadır — veritabanındaki istatistiksel skorlarla bağlantısı yoktur.</span>
+                        </div>
+
+                        <!-- Olası Durumlar Listesi -->
+                        @for (int i = 0; i < Model.ClaudeAnalizDurumlar.Count; i++)
+                        {
+                            var durum = Model.ClaudeAnalizDurumlar[i];
+                            <div class="mb-3 p-3" style="background:var(--sa-bg-raised);border-radius:10px;">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="sa-condition-rank">@(i + 1)</span>
+                                        <span class="fw-semibold" style="font-size:.9rem">@durum.Ad</span>
+                                    </div>
+                                    <span class="badge bg-@durum.UyumRengi rounded-pill">@durum.UyumDuzeyi Uyum</span>
+                                </div>
+                                <p class="text-muted mb-0" style="font-size:.82rem;margin-top:6px">@durum.Aciklama</p>
+                            </div>
+                        }
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ClaudeYorumu))
+                    {
+                        <div class="mt-3 pt-3" style="border-top:1px solid var(--sa-border);">
+                            <p class="mb-1" style="font-size:.75rem;color:var(--sa-primary-light);font-weight:600;letter-spacing:.5px;">GENEL DEĞERLENDİRME</p>
+                            <p style="color:var(--sa-text-sec);line-height:1.7;font-size:.92rem;margin:0;">@Model.ClaudeYorumu</p>
+                        </div>
+                    }
                 </div>
             }
 
