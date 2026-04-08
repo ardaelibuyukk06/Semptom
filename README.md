@@ -1,22 +1,80 @@
 # SemptomAnaliz
 
-Bireysel sağlık farkındalığı için semptom benzerlik analiz uygulaması.
+Bireysel sağlık farkındalığı için semptom benzerlik analiz uygulaması.  
 ASP.NET Core 9 MVC + PostgreSQL (Supabase) + Clean Architecture.
+
+**Hazırlayanlar:** Arda Elibüyük, Furkan Taşdelen — Bilgisayar Programcılığı  
+**Tarih:** Nisan 2026
 
 > **Önemli:** Bu uygulama tıbbi teşhis veya tavsiye vermez.
 > Sonuçlar yalnızca istatistiksel benzerlik analizidir.
 
 ---
 
-## Mimari
+## Klasör Yapısı
 
 ```
 SemptomAnalizApp/
-├── SemptomAnalizApp.Core/      # Entity'ler, enum'lar, interface'ler
-├── SemptomAnalizApp.Data/      # EF Core DbContext, migrations, seeder
-├── SemptomAnalizApp.Service/   # Naive Bayes analiz motoru, business logic
-└── SemptomAnalizApp.Web/       # ASP.NET Core MVC, controller'lar, view'lar
+├── docs/                            # Proje belgeleri
+│   ├── GereksinimAnalizi.md         # Gereksinim analizi dokümanı
+│   ├── ModulerTasarim.md            # Modüler sistem tasarımı
+│   └── UML/
+│       ├── UseCaseDiagram.puml      # Use Case diyagramı (PlantUML)
+│       └── ClassDiagram.puml        # Sınıf diyagramı (PlantUML)
+│
+├── SemptomAnalizApp.Core/           # Domain katmanı (Entity, Enum, Interface)
+│   ├── Entities/
+│   ├── Enums/
+│   └── Interfaces/
+│
+├── SemptomAnalizApp.Data/           # Veri erişim katmanı
+│   ├── Migrations/
+│   ├── Repositories/
+│   ├── AppDbContext.cs
+│   ├── DbSeeder.cs
+│   └── UnitOfWork.cs
+│
+├── SemptomAnalizApp.Service/        # İş mantığı katmanı
+│   ├── Interfaces/                  # IAnalizService
+│   └── Services/                    # AnalizMotoru (Naive Bayes)
+│
+├── SemptomAnalizApp.Web/            # Sunum katmanı (MVC)
+│   ├── Controllers/
+│   ├── ViewModels/
+│   ├── Views/
+│   ├── wwwroot/
+│   ├── Program.cs
+│   └── appsettings.json
+│
+├── SemptomAnalizApp.Tests/          # Birim testler (27 xUnit testi)
+├── SemptomAnalizApp.sln
+├── README.md
+└── .gitignore
 ```
+
+---
+
+## OOP Özellikleri
+
+| OOP Kavramı | Uygulama |
+|-------------|----------|
+| **Kalıtım** | `BaseEntity` abstract sınıf → `AnalizOturumu`, `Semptom`, `Hastalik` vb. türev sınıflar |
+| **Kalıtım** | `Kullanici` → `IdentityUser`'dan miras alır |
+| **Polymorphism** | `IAnalizService` arayüzü → `AnalizMotoru` implementasyonu |
+| **Polymorphism** | `IGenericRepository<T>` → `GenericRepository<T>` implementasyonu |
+| **Encapsulation** | `AnalizMotoru` içindeki algoritma detayları `private` metodlarla gizli |
+| **Encapsulation** | Repository'ler `protected readonly DbSet<T>` ile korunmuş |
+
+---
+
+## Mimari
+
+```
+Web (Sunum) → Service (İş Mantığı) → Data (Veri Erişim) → Core (Domain)
+```
+
+> Her katman yalnızca bir alttaki katmana bağımlıdır.  
+> Core hiçbir projeye bağımlı değildir (Dependency Inversion).
 
 ### Analiz Motoru
 
@@ -26,7 +84,7 @@ Naive Bayes log-likelihood tabanlı semptom benzerlik hesabı:
 log_posterior(D) = log(prior) + Σ log(P(Si|D) / P(Si|¬D)) + modifiers
 ```
 
-Sonuç softmax normalizasyonuyla 0–100 arasında **benzerlik skoru**na dönüştürülür.
+Sonuç softmax normalizasyonuyla 0–100 arasında **benzerlik skoruna** dönüştürülür.  
 Bu skor istatistiksel benzerlik gösterir; kalibre edilmiş olasılık değildir.
 
 ---
@@ -51,7 +109,7 @@ cd SemptomAnalizApp
 cp SemptomAnalizApp.Web/appsettings.example.json SemptomAnalizApp.Web/appsettings.json
 ```
 
-`appsettings.json` içinde aşağıdaki değerleri düzenle:
+`appsettings.json` içinde düzenle:
 
 ```json
 {
@@ -64,81 +122,28 @@ cp SemptomAnalizApp.Web/appsettings.example.json SemptomAnalizApp.Web/appsetting
 }
 ```
 
-> **Güvenlik notu:** Production'da bağlantı dizesini ve admin şifresini
-> [User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
-> veya environment variable olarak saklayın:
->
-> ```bash
-> dotnet user-secrets set "ConnectionStrings:DefaultConnection" "..."
-> dotnet user-secrets set "Seed:AdminPassword" "..."
-> ```
-
 ### 3. Çalıştır
 
 ```bash
 dotnet run --project SemptomAnalizApp.Web
 ```
 
-Uygulama şu adreslerde çalışır:
-
+Uygulama adresleri:
 - **https://localhost:7131**
 - **http://localhost:5075**
 
 İlk çalıştırmada:
 - Veritabanı migration'ları otomatik uygulanır
-- 42 hastalık + semptom kataloğu otomatik yüklenir (DbSeeder)
-- Admin kullanıcısı oluşturulur (`admin@semptomanaliz.com`)
+- 42 hastalık + semptom kataloğu otomatik yüklenir
+- Admin kullanıcısı oluşturulur: `admin@semptomanaliz.com`
 
----
-
-## Veritabanı Sıfırlama
-
-Seeder yeniden çalıştırılması gerekiyorsa (örn. hastalık verisi temizleme):
-
-```sql
-DELETE FROM "HastalikSemptomlar";
-DELETE FROM "Hastaliklar";
-```
-
-Sonra uygulamayı yeniden başlat; seeder 42 hastalığı yeniden yükler.
-
----
-
-## Deployment (Production)
-
-### Environment Variables
-
-| Değişken | Açıklama |
-|---|---|
-| `ConnectionStrings__DefaultConnection` | PostgreSQL bağlantı dizesi |
-| `Seed__AdminPassword` | İlk admin kullanıcı şifresi |
-| `ASPNETCORE_ENVIRONMENT` | `Production` |
-
-### Docker (örnek)
-
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
-WORKDIR /app
-COPY publish/ .
-ENTRYPOINT ["dotnet", "SemptomAnalizApp.Web.dll"]
-```
+### 4. Testleri Çalıştır
 
 ```bash
-dotnet publish SemptomAnalizApp.Web -c Release -o publish/
-docker build -t semptomanaliz .
-docker run -p 8080:8080 \
-  -e ConnectionStrings__DefaultConnection="..." \
-  -e Seed__AdminPassword="..." \
-  -e ASPNETCORE_ENVIRONMENT=Production \
-  semptomanaliz
+dotnet test
 ```
 
-### Render / Railway / Fly.io
-
-1. Repoyu bağla
-2. Environment variable'ları ayarla (yukarıdaki tablo)
-3. Build komutu: `dotnet publish SemptomAnalizApp.Web -c Release -o publish/`
-4. Start komutu: `dotnet publish/SemptomAnalizApp.Web.dll`
+27 birim testi; tamamı başarılı çalışmalıdır.
 
 ---
 
@@ -148,7 +153,7 @@ docker run -p 8080:8080 \
 - Security headers: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 - Rate limiting: 10 analiz/dakika per kullanıcı/IP
 - CSRF koruması: AntiForgery token tüm formlarda
-- Şifreler bcrypt hash olarak saklanır (düz metin yok)
+- Şifreler bcrypt hash olarak saklanır
 - KVKK: Kayıt sırasında açık rıza + tıbbi sorumluluk reddi onayı
 
 ---
@@ -156,17 +161,18 @@ docker run -p 8080:8080 \
 ## Teknoloji Yığını
 
 | Katman | Teknoloji |
-|---|---|
-| Web framework | ASP.NET Core 9 MVC |
+|--------|-----------|
+| Web Çatısı | ASP.NET Core 9 MVC |
 | ORM | Entity Framework Core 9 + Npgsql |
 | Veritabanı | PostgreSQL (Supabase) |
-| Auth | ASP.NET Core Identity |
-| UI | Bootstrap 5 dark theme + Chart.js 4 + SweetAlert2 |
+| Kimlik Doğrulama | ASP.NET Core Identity |
+| Ön Yüz | Bootstrap 5 dark tema + Chart.js 4 + SweetAlert2 |
 | İkonlar | Bootstrap Icons 1.11 |
+| Test | xUnit |
 
 ---
 
 ## KVKK
 
-Uygulama Türkiye'de yürürlükteki 6698 sayılı KVKK kapsamında işletilmektedir.
+Uygulama Türkiye'de yürürlükteki 6698 sayılı KVKK kapsamında işletilmektedir.  
 Aydınlatma metni: `/Home/Privacy`

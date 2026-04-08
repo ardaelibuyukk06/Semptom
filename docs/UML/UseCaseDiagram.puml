@@ -1,0 +1,113 @@
+@startuml SemptomAnaliz_UseCase
+' ============================================================
+'  SemptomAnaliz — Use Case Diyagramı
+'  Hazırlayanlar: Arda Elibüyük, Furkan Taşdelen
+'  Tarih: Nisan 2026
+' ============================================================
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #1e293b
+    BorderColor     #7274f3
+    FontColor       #f1f5f9
+    ArrowColor      #7274f3
+}
+skinparam actor {
+    BackgroundColor #7274f3
+    BorderColor     #4f46e5
+    FontColor       #f1f5f9
+}
+skinparam backgroundColor #0f172a
+skinparam note {
+    BackgroundColor #1e293b
+    BorderColor     #475569
+    FontColor       #94a3b8
+}
+
+' ── Aktörler ──────────────────────────────────────────────
+actor "Ziyaretçi"      as Ziyaretci
+actor "Kullanıcı"      as Kullanici
+actor "Admin"          as Admin
+
+' Kalıtım: Admin da Kullanıcı'dır
+Kullanici <|-- Admin
+
+' ── Sistem Sınırı ─────────────────────────────────────────
+rectangle "SemptomAnaliz Sistemi" {
+
+    ' Kimlik Doğrulama
+    package "Kimlik Yönetimi" {
+        usecase "Kayıt Ol"             as UC_Kayit
+        usecase "Giriş Yap"            as UC_Giris
+        usecase "Çıkış Yap"            as UC_Cikis
+        usecase "KVKK Onayı Ver"       as UC_Kvkk
+    }
+
+    ' Sağlık Profili
+    package "Sağlık Profili" {
+        usecase "Profil Oluştur/Güncelle" as UC_Profil
+        usecase "BMI Hesapla"          as UC_Bmi
+    }
+
+    ' Analiz
+    package "Semptom Analizi" {
+        usecase "Semptom Seç"          as UC_SemptomSec
+        usecase "Şiddet/Süre Gir"      as UC_SiddetSure
+        usecase "Analizi Başlat"       as UC_Analiz
+        usecase "Sonuçları Görüntüle"  as UC_Sonuc
+        usecase "Tekrar Skoru Gör"     as UC_Tekrar
+    }
+
+    ' Geçmiş
+    package "Analiz Geçmişi" {
+        usecase "Geçmişi Listele"      as UC_Gecmis
+        usecase "Geçmiş Detay Gör"     as UC_GecmisDetay
+    }
+
+    ' Admin
+    package "Admin Paneli" {
+        usecase "Kullanıcıları Yönet"  as UC_AdminKullanici
+        usecase "İstatistikleri Gör"   as UC_AdminIstatistik
+    }
+}
+
+' ── Ziyaretçi Bağlantıları ────────────────────────────────
+Ziyaretci --> UC_Kayit
+Ziyaretci --> UC_Giris
+
+' ── Kullanıcı Bağlantıları ────────────────────────────────
+Kullanici --> UC_Cikis
+Kullanici --> UC_Profil
+Kullanici --> UC_SemptomSec
+Kullanici --> UC_Analiz
+Kullanici --> UC_Sonuc
+Kullanici --> UC_Gecmis
+Kullanici --> UC_GecmisDetay
+
+' ── Admin Bağlantıları ────────────────────────────────────
+Admin --> UC_AdminKullanici
+Admin --> UC_AdminIstatistik
+
+' ── Include İlişkileri ────────────────────────────────────
+UC_Kayit       .> UC_Kvkk      : <<include>>
+UC_SemptomSec  .> UC_SiddetSure : <<include>>
+UC_Analiz      .> UC_SemptomSec : <<include>>
+UC_Sonuc       .> UC_Tekrar    : <<include>>
+
+' ── Extend İlişkileri ─────────────────────────────────────
+UC_Analiz      .> UC_Bmi       : <<extend>>
+
+' ── Notlar ────────────────────────────────────────────────
+note right of UC_Analiz
+  Naive Bayes log-likelihood
+  algoritması çalışır.
+  Sonuç tıbbi teşhis değildir.
+end note
+
+note right of UC_Kvkk
+  6698 sayılı KVKK kapsamında
+  açık rıza zorunludur.
+end note
+
+@enduml

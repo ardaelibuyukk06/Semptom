@@ -1,0 +1,296 @@
+@startuml SemptomAnaliz_ClassDiagram
+' ============================================================
+'  SemptomAnaliz — Sınıf Diyagramı (Class Diagram)
+'  Hazırlayanlar: Arda Elibüyük, Furkan Taşdelen
+'  Tarih: Nisan 2026
+'
+'  OOP Özellikleri:
+'    - Kalıtım (Inheritance): BaseEntity → AnalizOturumu, AnalizSonucu, Semptom...
+'    - Encapsulation: private/protected alanlar, public property'ler
+'    - Polymorphism: IAnalizService arayüzü → AnalizMotoru implementasyonu
+'    - Interface Segregation: IGenericRepository<T>, IAnalizService
+' ============================================================
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #1e293b
+    BorderColor     #7274f3
+    FontColor       #f1f5f9
+    HeaderBackgroundColor #312e81
+    ArrowColor      #7274f3
+}
+skinparam backgroundColor #0f172a
+skinparam stereotypeCBackgroundColor #4f46e5
+skinparam stereotypeIBackgroundColor #0f766e
+skinparam stereotypeABackgroundColor #7c3aed
+
+' ══════════════════════════════════════════════════════════
+'  CORE KATMANI — Entities
+' ══════════════════════════════════════════════════════════
+
+' ── Soyut Temel Sınıf (Kalıtım için temel) ────────────────
+abstract class BaseEntity {
+    + Id : int
+    + OlusturulmaTarihi : DateTime
+    + GuncellenmeTarihi : DateTime?
+}
+
+note right of BaseEntity
+  Kalıtım (Inheritance):
+  Tüm entity sınıfları
+  bu sınıftan türer.
+  Tekrarlayan alanlar
+  tek noktada yönetilir.
+end note
+
+' ── Kullanıcı (IdentityUser'dan kalıtım) ──────────────────
+class Kullanici {
+    + Ad : string
+    + Soyad : string
+    + KayitTarihi : DateTime
+    + Aktif : bool
+    ' Navigation Properties
+    + SaglikProfili : SaglikProfili?
+    + AnalizOturumlari : ICollection<AnalizOturumu>
+}
+
+note left of Kullanici
+  IdentityUser'dan kalıtım:
+  Email, PasswordHash,
+  PhoneNumber vb. alanlar
+  ASP.NET Core Identity'den
+  miras alınır.
+end note
+
+' ── Sağlık Profili ────────────────────────────────────────
+class SaglikProfili {
+    + KullaniciId : string
+    + Yas : int
+    + Cinsiyet : string
+    + Boy : decimal
+    + Kilo : decimal
+    + KronikHastaliklar : string?
+    + Notlar : string?
+}
+
+' ── Analiz Oturumu ────────────────────────────────────────
+class AnalizOturumu {
+    + KullaniciId : string
+    + EkNotlar : string?
+    + SemptomImzasi : string
+    ' Navigation Properties
+    + AnalizSemptomlari : ICollection<AnalizSemptomu>
+    + AnalizSonucu : AnalizSonucu?
+}
+
+' ── Analiz Sonucu ─────────────────────────────────────────
+class AnalizSonucu {
+    + AnalizOturumuId : int
+    + AciliyetSeviyesi : AciliyetSeviyesi
+    + AciliyetSkoru : int
+    + OnerilenBolum : string
+    + NedenAciklamasi : string
+    + GenelYorum : string
+    + TekrarSkoru : int
+    + EnYakinTekrarGunOncesi : int?
+    + HesaplananBmi : decimal
+    + BmiKategori : BmiKategori
+    + GunlukOnerilerJson : string
+    + UyariGostergeleriJson : string
+}
+
+' ── Semptom Kataloğu ──────────────────────────────────────
+class SemptomKatalog {
+    + Ad : string
+    + Kategori : SemptomKategorisi
+    + IkonKodu : string
+    + Aktif : bool
+    + SemptomId : int?
+}
+
+' ── Semptom (Motor Semptomu) ──────────────────────────────
+class Semptom {
+    + Ad : string
+    + KritikMi : bool
+    + Kategori : string
+}
+
+' ── Hastalık ──────────────────────────────────────────────
+class Hastalik {
+    + Ad : string
+    + Aciklama : string
+    + OnerilenBolum : string
+    + Prevalans : int
+    + MinYas : int?
+    + MaxYas : int?
+    + ErkekKatsayi : decimal
+    + KadinKatsayi : decimal
+    + AkutMu : bool
+}
+
+' ── Hastalık-Semptom İlişki Tablosu ──────────────────────
+class HastalikSemptom {
+    + HastalikId : int
+    + SemptomId : int
+    + Agirlik : int
+}
+
+' ── Analiz Semptomu ───────────────────────────────────────
+class AnalizSemptomu {
+    + AnalizOturumuId : int
+    + SemptomKatalogId : int
+    + Siddet : SemptomSiddeti
+    + SureGun : int
+}
+
+' ── Olası Durum ───────────────────────────────────────────
+class OlasiDurum {
+    + AnalizSonucuId : int
+    + Ad : string
+    + SkorYuzdesi : int
+    + Aciklama : string
+    + HastalikId : int?
+}
+
+' ══════════════════════════════════════════════════════════
+'  CORE KATMANI — Interfaces
+' ══════════════════════════════════════════════════════════
+
+interface "IGenericRepository<T>" as IRepo {
+    + GetByIdAsync(id: int) : Task<T?>
+    + GetAllAsync() : Task<IEnumerable<T>>
+    + FindAsync(predicate) : Task<IEnumerable<T>>
+    + AddAsync(entity: T) : Task
+    + Update(entity: T) : void
+    + Remove(entity: T) : void
+}
+
+note top of IRepo
+  Generic Repository Pattern:
+  Her entity için ayrı repository
+  yazmak yerine tek tip interface.
+  Encapsulation sağlar.
+end note
+
+interface IAnalizService {
+    + AnalizEtAsync(kullaniciId: string,\n  semptomlar: IEnumerable<SemptomGirdisi>,\n  ekNotlar: string?) : Task<AnalizSonucu>
+}
+
+note right of IAnalizService
+  Polymorphism (Çok Biçimlilik):
+  IAnalizService arayüzü,
+  AnalizMotoru sınıfı tarafından
+  uygulanır. Controller'lar
+  yalnızca interface'i bilir.
+end note
+
+' ══════════════════════════════════════════════════════════
+'  DATA KATMANI
+' ══════════════════════════════════════════════════════════
+
+class "GenericRepository<T>" as GenericRepo {
+    # _set : DbSet<T>
+    + GetByIdAsync(id: int) : Task<T?>
+    + GetAllAsync() : Task<IEnumerable<T>>
+    + FindAsync(predicate) : Task<IEnumerable<T>>
+    + AddAsync(entity: T) : Task
+    + Update(entity: T) : void
+    + Remove(entity: T) : void
+}
+
+class AppDbContext {
+    + Kullanicilar : DbSet<Kullanici>
+    + SaglikProfilleri : DbSet<SaglikProfili>
+    + AnalizOturumlari : DbSet<AnalizOturumu>
+    + AnalizSonuclari : DbSet<AnalizSonucu>
+    + Semptomlar : DbSet<Semptom>
+    + Hastaliklar : DbSet<Hastalik>
+    + SemptomKatalog : DbSet<SemptomKatalog>
+    + OlasiDurumlar : DbSet<OlasiDurum>
+}
+
+' ══════════════════════════════════════════════════════════
+'  SERVICE KATMANI
+' ══════════════════════════════════════════════════════════
+
+class AnalizMotoru {
+    - db : AppDbContext
+    - {static} P_S_GIVEN_NOT_D : double = 0.07
+    + AnalizEtAsync(...) : Task<AnalizSonucu>
+    - HesaplaBmi(profil) : (decimal, BmiKategori)
+    - HesaplaAciliyetSkoru(...) : int
+    - SkoraSeviyeAta(skor: int) : AciliyetSeviyesi
+    - OlusturImza(idler: List<int>) : string
+    - HesaplaBayesianOlasiDurumlarAsync(...) : Task<List<OlasiDurum>>
+    - BelirleGunlukOneriler(...) : List<GunlukOneriDto>
+    - BelirleUyarilar(...) : List<string>
+}
+
+' ══════════════════════════════════════════════════════════
+'  Enum'lar
+' ══════════════════════════════════════════════════════════
+
+enum AciliyetSeviyesi {
+    Normal = 0
+    Izle = 1
+    Dikkat = 2
+    Acil = 3
+}
+
+enum BmiKategori {
+    ZayifAltinda
+    Normal
+    Fazlakilolu
+    ObezeI
+    ObezeII
+}
+
+enum SemptomKategorisi {
+    BasBoyun
+    Solunum
+    Sindirim
+    MasEklem
+    Genel
+    Deri
+    Kalp
+    Ruhsal
+}
+
+' ══════════════════════════════════════════════════════════
+'  İLİŞKİLER (Relationships)
+' ══════════════════════════════════════════════════════════
+
+' Kalıtım (Inheritance) — OOP
+BaseEntity <|-- AnalizOturumu
+BaseEntity <|-- AnalizSonucu
+BaseEntity <|-- Semptom
+BaseEntity <|-- Hastalik
+BaseEntity <|-- HastalikSemptom
+BaseEntity <|-- AnalizSemptomu
+BaseEntity <|-- OlasiDurum
+BaseEntity <|-- SemptomKatalog
+BaseEntity <|-- SaglikProfili
+
+' Interface Uygulama (Polymorphism) — OOP
+IRepo <|.. GenericRepo
+IAnalizService <|.. AnalizMotoru
+
+' Kompozisyon / Bağımlılıklar
+Kullanici "1" *-- "0..1" SaglikProfili
+Kullanici "1" *-- "0..*" AnalizOturumu
+AnalizOturumu "1" *-- "1" AnalizSonucu
+AnalizOturumu "1" *-- "1..*" AnalizSemptomu
+AnalizSonucu "1" *-- "0..*" OlasiDurum
+Hastalik "1" *-- "1..*" HastalikSemptom
+Semptom "1" *-- "1..*" HastalikSemptom
+SemptomKatalog "0..1" --> "1" Semptom
+
+' Enum kullanımı
+AnalizSonucu --> AciliyetSeviyesi
+AnalizSonucu --> BmiKategori
+SemptomKatalog --> SemptomKategorisi
+
+' Servis bağımlılıkları
+AnalizMotoru --> AppDbContext
+
+@enduml

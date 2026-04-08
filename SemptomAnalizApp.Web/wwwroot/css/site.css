@@ -1167,20 +1167,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
    PREMIUM INTERACTIONS v4.0
    ════════════════════════════════════════════════════════════════ */
 
-/* ── Mouse cursor spotlight overlay ─────────────────────────── */
-.sa-spotlight {
-    pointer-events: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9998;
-    background: radial-gradient(
-        850px circle at var(--mouse-x, -9999px) var(--mouse-y, -9999px),
-        rgba(99, 102, 241, 0.030) 0%,
-        rgba(34, 211, 238, 0.011) 38%,
-        transparent 65%
-    );
-    transition: background 0.15s ease;
-}
 
 /* ── Dark-theme icon utility classes ─────────────────────────── */
 .sa-icon-blue   { background: rgba(99,102,241,0.12) !important; color: var(--sa-primary-light) !important; box-shadow: 0 0 14px rgba(99,102,241,0.20), inset 0 1px 0 rgba(255,255,255,0.08) !important; }
@@ -1308,11 +1294,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .sa-reveal-d3 { transition-delay: 0.21s; }
 .sa-reveal-d4 { transition-delay: 0.28s; }
 
-/* ── Card 3D tilt ────────────────────────────────────────────── */
-.sa-tilt {
-    transform-style: preserve-3d;
-    will-change: transform;
-}
 
 /* ── Warning box title color fix ─────────────────────────────── */
 .sa-warning-box .sa-section-title { color: #FCA5A5 !important; }
@@ -1426,10 +1407,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     box-shadow: 0 0 14px rgba(16,185,129,0.10);
 }
 
-/* ── Mobile tilt disable + ring scale ─────────────────────── */
+/* ── Mobile ring scale ─────────────────────────────────────── */
 @media (hover: none) {
-    .sa-tilt { transform: none !important; }
-}
 @media (max-width: 768px) {
     .sa-ring-wrapper  { width: 100px; height: 100px; }
     .sa-urgency-ring  { width: 100px !important; height: 100px !important; }

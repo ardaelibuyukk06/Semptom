@@ -49,7 +49,6 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.SlidingExpiration = true;
 });
 
-builder.Services.AddScoped<IClaudeYorumService, ClaudeYorumService>();
 builder.Services.AddScoped<IAnalizService, AnalizMotoru>();
 builder.Services.AddControllersWithViews();
 

@@ -17,8 +17,5 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Anthropic" Version="12.11.0" />
-  </ItemGroup>
 
 </Project>

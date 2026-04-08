@@ -61,10 +61,6 @@ public class AnalizSonucViewModel
     // Seçilen semptomlar (özet için)
     public List<string> SecilmisSemptomlar { get; set; } = [];
 
-    // Claude AI bağımsız analizi (null ise bölüm gösterilmez)
-    public string? ClaudeYorumu { get; set; }
-    public List<ClaudeAnalizSatiri> ClaudeAnalizDurumlar { get; set; } = [];
-
     // Semptom parmak izi radar grafiği için sabit sıralı kategori verisi
     public List<string> RadarEtiketler { get; set; } = [];
     public List<int>    RadarVeriler   { get; set; } = [];
@@ -87,10 +83,3 @@ public class GunlukOneriItem
     public string Metin { get; set; } = string.Empty;
 }
 
-public class ClaudeAnalizSatiri
-{
-    public string Ad { get; set; } = string.Empty;
-    public string Aciklama { get; set; } = string.Empty;
-    public string UyumDuzeyi { get; set; } = string.Empty;
-    public string UyumRengi { get; set; } = string.Empty;   // Bootstrap renk sınıfı
-}

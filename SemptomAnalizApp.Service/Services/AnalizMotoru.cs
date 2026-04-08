@@ -24,7 +24,7 @@ namespace SemptomAnalizApp.Service.Services;
 //  Sonuçlar softmax ile normalize edilerek göreli skor (0-100) haline getirilir.
 // ═══════════════════════════════════════════════════════════════════════════
 
-public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IAnalizService
+public class AnalizMotoru(AppDbContext db) : IAnalizService
 {
     // P(Semptom | Hastalık YOK) — genel popülasyonda bir semptomu taşıma olasılığı
     private const double P_S_GIVEN_NOT_D = 0.07;
@@ -93,35 +93,7 @@ public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IA
         var gunlukOneriler = BelirleGunlukOneriler(semptomIdler, aciliyetSeviyesi);
         var uyarilar       = BelirleUyarilar(semptomIdler, aciliyetSeviyesi, kritikVarMi);
 
-        // 12. Claude AI bağımsız analizi (opsiyonel — API anahtarı yoksa null döner)
-        var semptomAdlari = await db.SemptomKatalog
-            .Where(sk => semptomIdler.Contains(sk.Id))
-            .Select(sk => sk.Ad)
-            .ToListAsync();
-
-        var aciliyetEtiketi = aciliyetSeviyesi switch
-        {
-            AciliyetSeviyesi.Normal  => "Normal İzlem",
-            AciliyetSeviyesi.Izle    => "Takip Önerilir",
-            AciliyetSeviyesi.Dikkat  => "Dikkat Gerekli",
-            AciliyetSeviyesi.Acil    => "Acil Değerlendirme",
-            _ => "Normal"
-        };
-
-        var claudeAnaliz = await claudeYorum.AnalizEtAsync(new ClaudeAnalizGirdisi(
-            SecilmisSemptomlar: semptomAdlari,
-            DbOlasiDurumlar:    olasiDurumlar.Take(3).Select(d => d.Ad).ToList(),
-            AciliyetEtiketi:    aciliyetEtiketi,
-            OnerilenBolum:      onerilenBolum,
-            Yas:                profil?.Yas ?? 0,
-            Cinsiyet:           profil?.Cinsiyet ?? "",
-            Bmi:                bmi));
-
-        var claudeAnalizJson = claudeAnaliz != null
-            ? JsonSerializer.Serialize(claudeAnaliz)
-            : null;
-
-        // 13. Tek transaction ile kaydet
+        // 12. Tek transaction ile kaydet
         var oturum = new AnalizOturumu
         {
             KullaniciId   = kullaniciId,
@@ -144,7 +116,7 @@ public class AnalizMotoru(AppDbContext db, IClaudeYorumService claudeYorum) : IA
             BmiKategori            = bmiKat,
             GunlukOnerilerJson     = JsonSerializer.Serialize(gunlukOneriler),
             UyariGostergeleriJson  = JsonSerializer.Serialize(uyarilar),
-            ClaudeAnalizJson       = claudeAnalizJson
+            ClaudeAnalizJson       = null
         };
         db.AnalizSonuclari.Add(sonuc);
 

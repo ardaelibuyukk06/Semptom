@@ -267,20 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── 9. Mouse Cursor Spotlight ────────────────────────────────
-    const spotlight = document.createElement('div');
-    spotlight.className = 'sa-spotlight';
-    document.body.appendChild(spotlight);
-
-    let spotlightRAF = null;
-    document.addEventListener('mousemove', (e) => {
-        if (spotlightRAF) cancelAnimationFrame(spotlightRAF);
-        spotlightRAF = requestAnimationFrame(() => {
-            spotlight.style.setProperty('--mouse-x', e.clientX + 'px');
-            spotlight.style.setProperty('--mouse-y', e.clientY + 'px');
-        });
-    });
-
     // ── 10. Scroll Reveal (IntersectionObserver) ─────────────────
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -292,29 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
 
     document.querySelectorAll('.sa-reveal').forEach(el => revealObserver.observe(el));
-
-    // ── 11. Card 3D Tilt ─────────────────────────────────────────
-    document.querySelectorAll('.sa-tilt').forEach(card => {
-        let tiltRAF = null;
-        card.addEventListener('mousemove', (e) => {
-            if (window.matchMedia('(hover: none)').matches) return;
-            if (tiltRAF) cancelAnimationFrame(tiltRAF);
-            tiltRAF = requestAnimationFrame(() => {
-                const rect    = card.getBoundingClientRect();
-                const x       = e.clientX - rect.left;
-                const y       = e.clientY - rect.top;
-                const rotateX = ((y / rect.height) - 0.5) * -3;
-                const rotateY = ((x / rect.width)  - 0.5) *  3;
-                card.style.transform =
-                    `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
-            });
-        });
-        card.addEventListener('mouseleave', () => {
-            if (tiltRAF) cancelAnimationFrame(tiltRAF);
-            card.style.transform =
-                'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)';
-        });
-    });
 
     // ── 12. Urgency Ring Fill Animation ──────────────────────────
     const ringFill = document.getElementById('urgencyRingFill');
