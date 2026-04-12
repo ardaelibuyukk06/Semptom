@@ -57,9 +57,9 @@
                             @foreach (var k in kullanicilar)
                             {
                                 <tr>
-                                    <td class="fw-semibold small">@k.Ad @k.Soyad</td>
-                                    <td class="text-muted small">@k.Email</td>
-                                    <td class="text-muted small">@k.KayitTarihi.ToLocalTime().ToString("dd.MM.yy")</td>
+                                    <td class="fw-semibold small" style="color:#D0E4F8">@k.Ad @k.Soyad</td>
+                                    <td class="small" style="color:#7A9AB8">@k.Email</td>
+                                    <td class="small" style="color:#6E8FAA">@k.KayitTarihi.ToLocalTime().ToString("dd.MM.yy")</td>
                                 </tr>
                             }
                         </tbody>
@@ -90,8 +90,8 @@
                                     };
                                 }
                                 <tr>
-                                    <td class="small fw-semibold">@o.Kullanici?.Ad</td>
-                                    <td class="small text-muted">
+                                    <td class="small fw-semibold" style="color:#D0E4F8">@o.Kullanici?.Ad</td>
+                                    <td class="small" style="color:#7A9AB8">
                                         @string.Join(", ", o.AnalizSemptomlari.Select(s => s.SemptomKatalog?.Ad ?? "").Take(2))
                                         @if (o.AnalizSemptomlari.Count > 2) { <span>+@(o.AnalizSemptomlari.Count - 2)</span> }
                                     </td>

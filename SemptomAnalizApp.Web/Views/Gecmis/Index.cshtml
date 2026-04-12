@@ -55,10 +55,10 @@
                                             <div class="flex-grow-1">
                                                 <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                                                     <span class="badge bg-@kayit.AciliyetRengi rounded-pill">@kayit.AciliyetEtiketi</span>
-                                                    <span class="text-muted small">@kayit.Tarih.ToLocalTime().ToString("dd MMM, HH:mm")</span>
+                                                    <span style="color:#7A9AB8;font-size:.82rem">@kayit.Tarih.ToLocalTime().ToString("dd MMM, HH:mm")</span>
                                                     @if (!string.IsNullOrEmpty(kayit.OnerilenBolum))
                                                     {
-                                                        <span class="text-muted small"><i class="bi bi-hospital me-1"></i>@kayit.OnerilenBolum</span>
+                                                        <span style="color:#7A9AB8;font-size:.82rem"><i class="bi bi-hospital me-1"></i>@kayit.OnerilenBolum</span>
                                                     }
                                                 </div>
                                                 <div class="d-flex flex-wrap gap-1 mt-1">
