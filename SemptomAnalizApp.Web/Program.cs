@@ -23,8 +23,28 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-var conn = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Railway PostgreSQL plugin DATABASE_URL'sini Npgsql formatına çevir
+string conn;
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var configConn  = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (!string.IsNullOrWhiteSpace(configConn))
+{
+    conn = configConn;
+}
+else if (!string.IsNullOrWhiteSpace(databaseUrl))
+{
+    // postgresql://user:pass@host:port/dbname → Npgsql formatına çevir
+    var uri  = new Uri(databaseUrl);
+    var user = uri.UserInfo.Split(':');
+    conn = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={user[0]};Password={user[1]};SSL Mode=Require;Trust Server Certificate=true;";
+}
+else
+{
+    throw new InvalidOperationException(
+        "Veritabanı bağlantısı bulunamadı. " +
+        "Lütfen 'ConnectionStrings__DefaultConnection' veya 'DATABASE_URL' environment variable'ını ayarlayın.");
+}
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(conn));
