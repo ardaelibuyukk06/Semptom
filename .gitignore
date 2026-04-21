@@ -10,10 +10,10 @@ obj/
 **/appsettings.json
 **/appsettings.Development.json
 **/appsettings.Local.json
-**/appsettings.Production.json
 **/secrets.json
 **/.env
 **/.env.*
+## appsettings.Production.json is committed intentionally (no secrets, Railway uses env vars)
 
 ## EF Core migrations scaffold output (keep migrations, ignore these)
 *.sqlite

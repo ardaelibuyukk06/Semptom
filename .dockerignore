@@ -1,0 +1,14 @@
+**/.git
+**/.gitignore
+**/bin
+**/obj
+**/*.user
+**/*.suo
+**/.vs
+**/node_modules
+**/npm-debug.log
+**/Dockerfile*
+**/.dockerignore
+**/appsettings.Development.json
+README.md
+docs/
