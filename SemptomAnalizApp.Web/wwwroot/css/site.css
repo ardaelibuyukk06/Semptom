@@ -1418,6 +1418,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     .sa-urgency-ring  { width: 100px !important; height: 100px !important; }
     .sa-ring-score    { font-size: 1.55rem; }
 }
+}
 
 /* ════════════════════════════════════════════════════════════════
    HIGH CONTRAST v6.0 — Readability, Hierarchy, Visual Punch
@@ -1428,8 +1429,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     --sa-bg-elevated:   #101E38;
     --sa-bg-raised:     #162540;
     --sa-bg-active:     #1E2F4E;
-    --sa-text-sec:      #D0E4F8;
-    --sa-muted:         #B8CCE0;
+    --sa-text-sec:      #E2E8F0;
+    --sa-muted:         #D0E4F8;
     --sa-border-subtle: rgba(255,255,255,0.058);
     --sa-border:        rgba(255,255,255,0.110);
     --sa-border-strong: rgba(255,255,255,0.175);
@@ -1491,9 +1492,12 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     color: #9BB0C8;
 }
 
-/* ── Bootstrap text-muted override ──────────────────────────── */
+/* ── Bootstrap text-muted ve text-dark override ───────────────── */
 .text-muted {
-    color: #A0BCD8 !important;
+    color: var(--sa-text-sec) !important;
+}
+.text-dark {
+    color: var(--sa-text) !important;
 }
 
 /* ── Table cells — secondary tier, not full primary ─────────── */

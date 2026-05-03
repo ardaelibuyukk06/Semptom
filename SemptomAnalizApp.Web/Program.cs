@@ -41,13 +41,12 @@ else if (!string.IsNullOrWhiteSpace(databaseUrl))
 }
 else
 {
-    throw new InvalidOperationException(
-        "Veritabanı bağlantısı bulunamadı. " +
-        "Lütfen 'ConnectionStrings__DefaultConnection' veya 'DATABASE_URL' environment variable'ını ayarlayın.");
+    // Localhost çalışması için varsayılan olarak SQLite kullan
+    conn = "Data Source=SemptomAnalizLocal.db";
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(conn));
+    opt.UseSqlite(conn));
 
 builder.Services.AddIdentity<Kullanici, IdentityRole>(opt =>
 {

@@ -8,7 +8,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
         <div>
             <h1 class="sa-page-title mb-1">Merhaba, @Model.KullaniciAd <span style="font-size:1.4rem">👋</span></h1>
-            <p class="small mb-0" style="color:#A0BCD8">Sağlık panelinize hoş geldiniz</p>
+            <p class="small mb-0" style="color:var(--sa-text-sec)">Sağlık panelinize hoş geldiniz</p>
         </div>
         <a asp-controller="Analiz" asp-action="Yeni" class="btn btn-primary">
             <i class="bi bi-plus-circle me-2"></i>Yeni Analiz
@@ -22,7 +22,7 @@
                 <i class="bi bi-exclamation-circle fs-4" style="color:#FCD34D;flex-shrink:0"></i>
                 <div class="flex-grow-1">
                     <div class="fw-semibold">Sağlık profiliniz eksik</div>
-                    <div class="small" style="color:#A0BCD8">Profil bilgilerinizi ekleyerek analiz sonuçlarını kişiselleştirin.</div>
+                    <div class="small" style="color:var(--sa-text-sec)">Profil bilgilerinizi ekleyerek analiz sonuçlarını kişiselleştirin.</div>
                 </div>
                 <a asp-controller="Profil" asp-action="Index" class="btn btn-sm btn-warning">Profili Tamamla</a>
             </div>
