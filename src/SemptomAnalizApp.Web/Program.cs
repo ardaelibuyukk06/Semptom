@@ -27,28 +27,41 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-// Railway PostgreSQL plugin DATABASE_URL'sini Npgsql formatına çevir
-string conn;
+// Veritabanı sağlayıcı seçimi:
+// 1) DATABASE_URL varsa → Railway PostgreSQL (UseNpgsql)
+// 2) appsettings'de DefaultConnection doluysa → o string'i kullan
+// 3) Hiçbiri yoksa → yerel geliştirme için SQLite
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 var configConn  = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (!string.IsNullOrWhiteSpace(configConn))
+bool usePostgres = false;
+string conn;
+
+if (!string.IsNullOrWhiteSpace(databaseUrl))
+{
+    // Railway production: PostgreSQL
+    conn = BuildNpgsqlConnectionString(databaseUrl);
+    usePostgres = true;
+}
+else if (!string.IsNullOrWhiteSpace(configConn))
 {
     conn = configConn;
-}
-else if (!string.IsNullOrWhiteSpace(databaseUrl))
-{
-    conn = BuildNpgsqlConnectionString(databaseUrl);
+    // configConn Npgsql formatıysa PostgreSQL, değilse SQLite
+    usePostgres = conn.Contains("Host=", StringComparison.OrdinalIgnoreCase);
 }
 else
 {
-    throw new InvalidOperationException(
-        "Veritabanı bağlantısı bulunamadı. " +
-        "Lütfen 'ConnectionStrings__DefaultConnection' veya 'DATABASE_URL' environment variable'ını ayarlayın.");
+    // Yerel geliştirme: SQLite fallback
+    conn = "Data Source=SemptomAnalizLocal.db";
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite(conn));
+{
+    if (usePostgres)
+        opt.UseNpgsql(conn);
+    else
+        opt.UseSqlite(conn);
+});
 builder.Services.AddScoped<IAnalizDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
 builder.Services.AddIdentity<Kullanici, IdentityRole>(opt =>
@@ -100,7 +113,14 @@ using (var scope = app.Services.CreateScope())
     var um = scope.ServiceProvider.GetRequiredService<UserManager<Kullanici>>();
     var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var adminPwd = app.Configuration["Seed:AdminPassword"];
-    await db.Database.MigrateAsync();
+
+    // SQLite: migration dosyaları SQLite'a özel olduğu için MigrateAsync kullan
+    // PostgreSQL: migration'lar uyumsuz, doğrudan EnsureCreated ile tablo oluştur
+    if (usePostgres)
+        await db.Database.EnsureCreatedAsync();
+    else
+        await db.Database.MigrateAsync();
+
     await DbSeeder.SeedAsync(db, um, rm, adminPwd, seedDemoUsers: app.Environment.IsDevelopment());
 }
 
@@ -154,7 +174,6 @@ static string BuildNpgsqlConnectionString(string databaseUrl)
         Username = Uri.UnescapeDataString(userInfo[0]),
         Password = Uri.UnescapeDataString(userInfo[1]),
         SslMode = SslMode.Require,
-        TrustServerCertificate = true,
         Pooling = true
     };
 

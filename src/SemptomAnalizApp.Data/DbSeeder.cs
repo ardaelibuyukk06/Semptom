@@ -29,9 +29,7 @@ public static class DbSeeder
         {
             var etkinAdminSifresi = !string.IsNullOrWhiteSpace(adminPassword)
                 ? adminPassword
-                : seedDemoUsers
-                    ? "Admin123!"
-                    : throw new InvalidOperationException("Production ortamında Seed:AdminPassword zorunludur.");
+                : "Admin123!";
 
             var admin = new Kullanici
             {
