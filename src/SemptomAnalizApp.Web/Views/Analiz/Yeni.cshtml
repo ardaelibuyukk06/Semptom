@@ -1,0 +1,95 @@
+@model SemptomAnalizApp.Web.ViewModels.YeniAnalizViewModel
+@{
+    ViewData["Title"] = "Yeni Analiz";
+}
+
+<div class="container py-4">
+    <div class="sa-anim-fadein mb-4">
+        <p class="sa-section-title">Semptom Analizi</p>
+        <h1 class="sa-page-title">Nasıl Hissediyorsunuz?</h1>
+        <p style="color:#A0BCD8;font-size:.9rem">Yaşadığınız semptomları seçin, şiddet ve süre bilgilerini girin.</p>
+    </div>
+
+    <!-- Kategori Filtresi -->
+    <div class="d-flex flex-wrap gap-2 mb-4 sa-anim-fadein-d1">
+        <button class="sa-chip sa-kat-btn active" data-kat="hepsi">
+            <i class="bi bi-grid-3x3-gap"></i> Tümü
+        </button>
+        @foreach (var grup in Model.SemptomGruplari)
+        {
+            <button class="sa-chip sa-kat-btn" data-kat="@grup.KategoriAdi">
+                <i class="@grup.IkonKodu"></i> @grup.KategoriAdi
+            </button>
+        }
+    </div>
+
+    <form id="analizForm" asp-controller="Analiz" asp-action="Yeni" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="semptomIdler" name="semptomIdler" value="" />
+        <input type="hidden" id="siddetler"    name="siddetler"    value="" />
+        <input type="hidden" id="sureler"      name="sureler"      value="" />
+
+        <div id="semptomChipContainer">
+            @foreach (var grup in Model.SemptomGruplari)
+            {
+                <div class="sa-card mb-3 sa-anim-fadein-d2 sa-kat-grup" data-kat="@grup.KategoriAdi">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width:30px;height:30px;background:var(--sa-primary-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary)">
+                            <i class="@grup.IkonKodu"></i>
+                        </div>
+                        <span class="fw-semibold small">@grup.KategoriAdi</span>
+                    </div>
+                    <div class="sa-chip-grid">
+                        @foreach (var semptom in grup.Semptomlar)
+                        {
+                            <span class="sa-chip"
+                                  data-id="@semptom.Id"
+                                  data-ad="@semptom.Ad"
+                                  data-ikon="@semptom.IkonKodu">
+                                <i class="@semptom.IkonKodu"></i>@semptom.Ad
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Detay alanı -->
+        <div id="semptomDetaylar" class="mb-4" style="display:none">
+            <div class="sa-card">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="sa-icon-box sa-icon-box-green">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <span class="fw-semibold small">Seçili Semptom Detayları</span>
+                </div>
+                <!-- chip detayları buraya JS ile eklenir -->
+            </div>
+        </div>
+
+        <!-- Kırmızı Bayrak Uyarısı — JS tarafından gösterilir/gizlenir -->
+        <div id="redFlagBanner" style="display:none" role="alert" aria-live="polite"></div>
+
+        <!-- Notlar ve Gönder -->
+        <div class="sa-card sa-anim-fadein-d3">
+            <label class="sa-form-label" for="ekNotlar">
+                <i class="bi bi-pencil-square me-1"></i>Ek Notlar <span class="text-muted fw-normal">(isteğe bağlı)</span>
+            </label>
+            <textarea class="form-control" id="ekNotlar" name="ekNotlar" rows="3"
+                      placeholder="Örn: Semptomlar sabahları daha şiddetli, ateşim 38.2°C..."></textarea>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mt-4 flex-wrap">
+            <button type="submit" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-cpu me-2"></i>Analiz Yap
+            </button>
+            <span id="semptomSayaci" class="sa-semptom-sayac" style="display:none">
+                <i class="bi bi-check-circle-fill"></i>
+                <span id="semptomSayaciSayi">0</span> semptom seçildi
+            </span>
+            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-outline-secondary">
+                İptal
+            </a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,113 @@
+@using SemptomAnalizApp.Core.Entities
+@using SemptomAnalizApp.Core.Enums
+@{
+    ViewData["Title"] = "Admin Paneli";
+    var kullanicilar = ViewBag.Kullanicilar as List<Kullanici> ?? [];
+    var sonAnalizler = ViewBag.SonAnalizler as List<AnalizOturumu> ?? [];
+}
+
+<div class="container py-4">
+    <form class="d-none">
+        @Html.AntiForgeryToken()
+    </form>
+
+    <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
+        <div>
+            <p class="sa-section-title">Yönetim</p>
+            <h1 class="sa-page-title">Admin Paneli</h1>
+        </div>
+        <span class="badge bg-danger rounded-pill px-3 py-2">
+            <i class="bi bi-shield-check me-1"></i>Admin Erişimi
+        </span>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3 sa-anim-fadein-d1">
+            <div class="sa-stat-card">
+                <div class="sa-stat-value sa-counter" data-target="@ViewBag.ToplamKullanici">0</div>
+                <div class="sa-stat-label">Toplam Kullanıcı</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d2">
+            <div class="sa-stat-card">
+                <div class="sa-stat-value sa-counter" data-target="@ViewBag.ToplamAnaliz">0</div>
+                <div class="sa-stat-label">Toplam Analiz</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d3">
+            <div class="sa-stat-card">
+                <div class="sa-stat-value sa-counter" data-target="@ViewBag.BugunGiris">0</div>
+                <div class="sa-stat-label">Yeni Kayıt (24s)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 sa-anim-fadein-d4">
+            <div class="sa-stat-card">
+                <div class="sa-stat-value text-danger">@ViewBag.AcilSayisi</div>
+                <div class="sa-stat-label">Acil Sonuçlar</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Kullanıcılar -->
+        <div class="col-md-6 sa-anim-fadein-d3">
+            <div class="sa-card h-100">
+                <p class="sa-section-title">Son Kullanıcılar</p>
+                <div class="table-responsive">
+                    <table class="table sa-admin-table mb-0">
+                        <thead><tr><th>Ad Soyad</th><th>E-posta</th><th>Kayıt</th></tr></thead>
+                        <tbody>
+                            @foreach (var k in kullanicilar)
+                            {
+                                <tr>
+                                    <td class="fw-semibold small" style="color:#D0E4F8">@k.Ad @k.Soyad</td>
+                                    <td class="small" style="color:#7A9AB8">@k.Email</td>
+                                    <td class="small" style="color:#6E8FAA">@k.KayitTarihi.ToLocalTime().ToString("dd.MM.yy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Analizler -->
+        <div class="col-md-6 sa-anim-fadein-d4">
+            <div class="sa-card h-100">
+                <p class="sa-section-title">Son Analizler</p>
+                <div class="table-responsive">
+                    <table class="table sa-admin-table mb-0">
+                        <thead><tr><th>Kullanıcı</th><th>Semptomlar</th><th>Aciliyet</th></tr></thead>
+                        <tbody>
+                            @foreach (var o in sonAnalizler)
+                            {
+                                string renk = "success";
+                                string etiket = "Normal";
+                                if (o.AnalizSonucu != null)
+                                {
+                                    (etiket, renk) = o.AnalizSonucu.AciliyetSeviyesi switch {
+                                        AciliyetSeviyesi.Acil    => ("Acil", "danger"),
+                                        AciliyetSeviyesi.Dikkat  => ("Dikkat", "warning"),
+                                        AciliyetSeviyesi.Izle    => ("İzle", "info"),
+                                        _ => ("Normal", "success")
+                                    };
+                                }
+                                <tr>
+                                    <td class="small fw-semibold" style="color:#D0E4F8">@o.Kullanici?.Ad</td>
+                                    <td class="small" style="color:#7A9AB8">
+                                        @string.Join(", ", o.AnalizSemptomlari.Select(s => s.SemptomKatalog?.Ad ?? "").Take(2))
+                                        @if (o.AnalizSemptomlari.Count > 2) { <span>+@(o.AnalizSemptomlari.Count - 2)</span> }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@renk rounded-pill">@etiket</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

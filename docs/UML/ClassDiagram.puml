@@ -176,6 +176,15 @@ interface IAnalizService {
     + AnalizEtAsync(kullaniciId: string,\n  semptomlar: IEnumerable<SemptomGirdisi>,\n  ekNotlar: string?) : Task<AnalizSonucu>
 }
 
+interface IAnalizDbContext {
+    + SaglikProfilleri : DbSet<SaglikProfili>
+    + SemptomKatalog : DbSet<SemptomKatalog>
+    + AnalizOturumlari : DbSet<AnalizOturumu>
+    + AnalizSonuclari : DbSet<AnalizSonucu>
+    + Hastaliklar : DbSet<Hastalik>
+    + SaveChangesAsync() : Task<int>
+}
+
 note right of IAnalizService
   Polymorphism (Çok Biçimlilik):
   IAnalizService arayüzü,
@@ -214,16 +223,38 @@ class AppDbContext {
 ' ══════════════════════════════════════════════════════════
 
 class AnalizMotoru {
-    - db : AppDbContext
-    - {static} P_S_GIVEN_NOT_D : double = 0.07
+    - db : IAnalizDbContext
     + AnalizEtAsync(...) : Task<AnalizSonucu>
-    - HesaplaBmi(profil) : (decimal, BmiKategori)
-    - HesaplaAciliyetSkoru(...) : int
-    - SkoraSeviyeAta(skor: int) : AciliyetSeviyesi
-    - OlusturImza(idler: List<int>) : string
-    - HesaplaBayesianOlasiDurumlarAsync(...) : Task<List<OlasiDurum>>
-    - BelirleGunlukOneriler(...) : List<GunlukOneriDto>
-    - BelirleUyarilar(...) : List<string>
+}
+
+class BayesianAnalizService {
+    - db : IAnalizDbContext
+    - {static} P_S_GIVEN_NOT_D : double = 0.07
+    + HesaplaOlasiDurumlarAsync(...) : Task<List<OlasiDurum>>
+}
+
+class BmiService {
+    + Hesapla(profil) : (decimal, BmiKategori)
+}
+
+class AciliyetService {
+    + HesaplaSkor(...) : int
+    + SeviyeyeAta(skor: int) : AciliyetSeviyesi
+}
+
+class TekrarAnalizService {
+    - db : IAnalizDbContext
+    + TespitEtAsync(kullaniciId, imza) : Task<(int, int?)>
+}
+
+class AnalizMetinService {
+    + OlusturAciklama(...) : string
+    + OlusturGenelYorum(...) : string
+}
+
+class GunlukOneriService {
+    + BelirleGunlukOneriler(...) : List<GunlukOneriDto>
+    + BelirleUyarilar(...) : List<string>
 }
 
 ' ══════════════════════════════════════════════════════════
@@ -274,6 +305,7 @@ BaseEntity <|-- SaglikProfili
 ' Interface Uygulama (Polymorphism) — OOP
 IRepo <|.. GenericRepo
 IAnalizService <|.. AnalizMotoru
+IAnalizDbContext <|.. AppDbContext
 
 ' Kompozisyon / Bağımlılıklar
 Kullanici "1" *-- "0..1" SaglikProfili
@@ -291,6 +323,14 @@ AnalizSonucu --> BmiKategori
 SemptomKatalog --> SemptomKategorisi
 
 ' Servis bağımlılıkları
-AnalizMotoru --> AppDbContext
+AnalizMotoru --> IAnalizDbContext
+AnalizMotoru --> BayesianAnalizService
+AnalizMotoru --> BmiService
+AnalizMotoru --> AciliyetService
+AnalizMotoru --> TekrarAnalizService
+AnalizMotoru --> AnalizMetinService
+AnalizMotoru --> GunlukOneriService
+BayesianAnalizService --> IAnalizDbContext
+TekrarAnalizService --> IAnalizDbContext
 
 @enduml

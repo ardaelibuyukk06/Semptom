@@ -22,31 +22,33 @@ SemptomAnalizApp/
 │       ├── UseCaseDiagram.puml      # Use Case diyagramı (PlantUML)
 │       └── ClassDiagram.puml        # Sınıf diyagramı (PlantUML)
 │
-├── SemptomAnalizApp.Core/           # Domain katmanı (Entity, Enum, Interface)
-│   ├── Entities/
-│   ├── Enums/
-│   └── Interfaces/
+├── src/
+│   ├── SemptomAnalizApp.Core/       # Domain katmanı (Entity, Enum, Interface)
+│   │   ├── Entities/
+│   │   ├── Enums/
+│   │   └── Interfaces/
+│   │
+│   ├── SemptomAnalizApp.Data/       # Veri erişim katmanı
+│   │   ├── Migrations/
+│   │   ├── Repositories/
+│   │   ├── AppDbContext.cs
+│   │   ├── DbSeeder.cs
+│   │   └── UnitOfWork.cs
+│   │
+│   ├── SemptomAnalizApp.Service/    # İş mantığı katmanı
+│   │   ├── Interfaces/              # IAnalizService ve alt servis sözleşmeleri
+│   │   └── Services/                # AnalizMotoru + küçük analiz servisleri
+│   │
+│   ├── SemptomAnalizApp.Web/        # Sunum katmanı (MVC)
+│   │   ├── Controllers/
+│   │   ├── ViewModels/
+│   │   ├── Views/
+│   │   ├── wwwroot/
+│   │   ├── Program.cs
+│   │   └── appsettings.json
+│   │
+│   └── SemptomAnalizApp.Tests/      # Birim testler (27 xUnit testi)
 │
-├── SemptomAnalizApp.Data/           # Veri erişim katmanı
-│   ├── Migrations/
-│   ├── Repositories/
-│   ├── AppDbContext.cs
-│   ├── DbSeeder.cs
-│   └── UnitOfWork.cs
-│
-├── SemptomAnalizApp.Service/        # İş mantığı katmanı
-│   ├── Interfaces/                  # IAnalizService
-│   └── Services/                    # AnalizMotoru (Naive Bayes)
-│
-├── SemptomAnalizApp.Web/            # Sunum katmanı (MVC)
-│   ├── Controllers/
-│   ├── ViewModels/
-│   ├── Views/
-│   ├── wwwroot/
-│   ├── Program.cs
-│   └── appsettings.json
-│
-├── SemptomAnalizApp.Tests/          # Birim testler (27 xUnit testi)
 ├── SemptomAnalizApp.sln
 ├── README.md
 └── .gitignore
@@ -62,7 +64,7 @@ SemptomAnalizApp/
 | **Kalıtım** | `Kullanici` → `IdentityUser`'dan miras alır |
 | **Polymorphism** | `IAnalizService` arayüzü → `AnalizMotoru` implementasyonu |
 | **Polymorphism** | `IGenericRepository<T>` → `GenericRepository<T>` implementasyonu |
-| **Encapsulation** | `AnalizMotoru` içindeki algoritma detayları `private` metodlarla gizli |
+| **Encapsulation** | `AnalizMotoru` yalnızca analiz akışını yönetir; BMI, imza, Bayes, aciliyet, tekrar ve öneri hesapları küçük servislerde saklanır |
 | **Encapsulation** | Repository'ler `protected readonly DbSet<T>` ile korunmuş |
 
 ---
@@ -70,10 +72,11 @@ SemptomAnalizApp/
 ## Mimari
 
 ```
-Web (Sunum) → Service (İş Mantığı) → Data (Veri Erişim) → Core (Domain)
+Web (Sunum) → Service (İş Mantığı) → Core (Domain)
+Web (Sunum) → Data (Veri Erişim) → Core (Domain)
 ```
 
-> Her katman yalnızca bir alttaki katmana bağımlıdır.  
+> İş mantığı veri erişimi için `IAnalizDbContext` sözleşmesini kullanır; somut EF Core bağlantısı Web katmanında DI ile verilir.  
 > Core hiçbir projeye bağımlı değildir (Dependency Inversion).
 
 ### Analiz Motoru
@@ -106,7 +109,7 @@ cd SemptomAnalizApp
 ### 2. Konfigürasyon
 
 ```bash
-cp SemptomAnalizApp.Web/appsettings.example.json SemptomAnalizApp.Web/appsettings.json
+cp src/SemptomAnalizApp.Web/appsettings.example.json src/SemptomAnalizApp.Web/appsettings.json
 ```
 
 `appsettings.json` içinde düzenle:
@@ -125,7 +128,7 @@ cp SemptomAnalizApp.Web/appsettings.example.json SemptomAnalizApp.Web/appsetting
 ### 3. Çalıştır
 
 ```bash
-dotnet run --project SemptomAnalizApp.Web
+dotnet run --project src/SemptomAnalizApp.Web
 ```
 
 Uygulama adresleri:

@@ -3,18 +3,18 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Proje dosyalarını kopyala ve restore et (cache katmanı)
-COPY SemptomAnalizApp.Core/SemptomAnalizApp.Core.csproj       SemptomAnalizApp.Core/
-COPY SemptomAnalizApp.Data/SemptomAnalizApp.Data.csproj       SemptomAnalizApp.Data/
-COPY SemptomAnalizApp.Service/SemptomAnalizApp.Service.csproj SemptomAnalizApp.Service/
-COPY SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj         SemptomAnalizApp.Web/
+COPY src/SemptomAnalizApp.Core/SemptomAnalizApp.Core.csproj       src/SemptomAnalizApp.Core/
+COPY src/SemptomAnalizApp.Data/SemptomAnalizApp.Data.csproj       src/SemptomAnalizApp.Data/
+COPY src/SemptomAnalizApp.Service/SemptomAnalizApp.Service.csproj src/SemptomAnalizApp.Service/
+COPY src/SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj         src/SemptomAnalizApp.Web/
 
-RUN dotnet restore SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj
+RUN dotnet restore src/SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj
 
 # Tüm kaynak kodu kopyala
 COPY . .
 
 # Publish et
-RUN dotnet publish SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj \
+RUN dotnet publish src/SemptomAnalizApp.Web/SemptomAnalizApp.Web.csproj \
     -c Release \
     -o /app/publish \
     --no-restore
@@ -25,10 +25,9 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Railway PORT env değişkenini kullan
-ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "SemptomAnalizApp.Web.dll"]
+# Railway PORT env degiskeni runtime'da shell tarafindan cozulur.
+ENTRYPOINT ["sh", "-c", "dotnet SemptomAnalizApp.Web.dll --urls http://+:${PORT:-8080}"]

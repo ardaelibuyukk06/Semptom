@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="sa-hero">
+    <div class="container">
+        <div class="sa-anim-fadein">
+            <span class="sa-hero-badge mb-3">
+                <i class="bi bi-stars"></i> Akıllı Semptom Analizi
+            </span>
+            <h1 class="sa-hero-title">
+                Sağlığınızı <span>Anlayın.</span><br>
+                Semptomlarınızı Takip Edin.
+            </h1>
+            <p class="sa-hero-sub">
+                Kişisel sağlık profilinize göre semptomlarınızı analiz edin,
+                tekrarlayan örüntüleri keşfedin ve akıllı içgörüler alın.
+            </p>
+        </div>
+        <div class="sa-hero-actions sa-anim-fadein-d2">
+            <a asp-controller="Hesap" asp-action="Kayit" class="btn btn-primary btn-lg px-5 me-2">
+                <i class="bi bi-lightning-charge-fill me-2"></i>Analizi Başlat
+            </a>
+            <a asp-controller="Hesap" asp-action="Giris" class="btn btn-outline-secondary btn-lg px-4">
+                Giriş Yap
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4 sa-anim-fadein-d3">
+        <div class="col-md-4">
+            <div class="sa-feature-card sa-tilt">
+                <div class="sa-feature-icon"><i class="bi bi-person-vcard"></i></div>
+                <h5 class="fw-bold mb-2">Kişisel Sağlık Profili</h5>
+                <p class="text-muted small mb-0">Yaş, cinsiyet, VKİ ve kronik hastalık bilgilerinizle analiz sonuçlarınızı kişiselleştirin.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sa-feature-card sa-tilt">
+                <div class="sa-feature-icon sa-feature-icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+                <h5 class="fw-bold mb-2">Akıllı Analiz Motoru</h5>
+                <p class="text-muted small mb-0">Semptom kombinasyonlarınız, şiddet ve süre bilgileriyle birleşerek olası durumları ve aciliyet seviyesini belirler.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sa-feature-card sa-tilt">
+                <div class="sa-feature-icon sa-feature-icon-amber"><i class="bi bi-clock-history"></i></div>
+                <h5 class="fw-bold mb-2">Örüntü Tespiti</h5>
+                <p class="text-muted small mb-0">Semptom imzalarıyla geçmiş analizlerinizdeki tekrarları tespit edin ve sağlık eğilimlerinizi takip edin.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sa-divider my-5"></div>
+
+    <div class="row align-items-center g-4 sa-anim-fadein-d4">
+        <div class="col-md-6">
+            <p class="sa-section-title">Neler Alırsınız?</p>
+            <h2 class="sa-page-title mb-4">Kapsamlı Analiz,<br>Anlaşılır Çıktı</h2>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-shield-check text-success fs-5 mt-1"></i>
+                    <div><div class="fw-semibold small">Aciliyet Renk Sistemi</div><div class="text-muted" style="font-size:.82rem">Normal'den Acil'e 4 seviyeli renk kodlu değerlendirme</div></div>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-hospital text-primary fs-5 mt-1"></i>
+                    <div><div class="fw-semibold small">Bölüm Yönlendirmesi</div><div class="text-muted" style="font-size:.82rem">Semptomlarınıza göre hangi uzmana gitmeniz gerektiği</div></div>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-repeat text-warning fs-5 mt-1"></i>
+                    <div><div class="fw-semibold small">Tekrar Skoru</div><div class="text-muted" style="font-size:.82rem">Benzer semptomları kaç kez yaşadığınızın tespiti</div></div>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-lightbulb text-info fs-5 mt-1"></i>
+                    <div><div class="fw-semibold small">Günlük Öneriler</div><div class="text-muted" style="font-size:.82rem">Tıbbi olmayan destekleyici günlük yaşam tavsiyeleri</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 sa-anim-fadein-d5">
+            <div class="sa-card p-4">
+                <div class="sa-urgency-banner sa-urgency-dikkat mb-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="sa-urgency-label">Dikkat Gerekli</div>
+                            <div class="sa-department-badge"><i class="bi bi-hospital me-1"></i>Dahiliye</div>
+                        </div>
+                        <div class="sa-ring-center" style="width:48px;height:48px;border-radius:50%;background:rgba(251,146,60,0.12);display:flex;align-items:center;justify-content:center;border:2px solid rgba(251,146,60,0.35)">
+                            <span style="font-size:.95rem;font-weight:800;color:#FB923C">63</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="sa-section-title mb-3" style="font-size:.7rem">İstatistiksel Benzerlik Analizi</p>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="fw-semibold">Grip / İnfluenza</small>
+                        <span class="badge bg-danger rounded-pill" style="font-size:.68rem">Yüksek Uyum</span>
+                    </div>
+                    <div class="sa-progress-bar-wrap">
+                        <div class="sa-progress-fill bar-danger" style="width:100%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="fw-semibold">Üst Solunum Yolu Enf.</small>
+                        <span class="badge bg-warning rounded-pill" style="font-size:.68rem">Orta Uyum</span>
+                    </div>
+                    <div class="sa-progress-bar-wrap">
+                        <div class="sa-progress-fill bar-warning" style="width:65%"></div>
+                    </div>
+                </div>
+                <div class="sa-disclaimer-box mt-3" style="padding:8px 12px;font-size:.72rem">
+                    <i class="bi bi-shield-exclamation me-1"></i>
+                    Bu çıktılar istatistiksel benzerlik skorudur; tıbbi teşhis değildir.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

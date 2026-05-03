@@ -57,7 +57,7 @@ hakkında istatistiksel bilgi edinmesini sağlayan bir web uygulamasıdır.
 | Kod | Gereksinim | Öncelik |
 |-----|-----------|---------|
 | SA-01 | Kullanıcı kategori bazlı semptom listesinden seçim yapabilmelidir | Yüksek |
-| SA-02 | Her semptom için şiddet (1-5) ve süre (gün) girilebilmelidir | Yüksek |
+| SA-02 | Her semptom için şiddet (1-3) ve süre (gün) girilebilmelidir | Yüksek |
 | SA-03 | Ek not alanı bulunmalıdır | Düşük |
 | SA-04 | Sistem Naive Bayes algoritması ile olası durumları hesaplamalıdır | Yüksek |
 | SA-05 | Aciliyet skoru (0–100) ve seviyesi gösterilmelidir | Yüksek |
@@ -92,7 +92,7 @@ hakkında istatistiksel bilgi edinmesini sağlayan bir web uygulamasıdır.
 | FO-01 | Güvenlik | HTTPS/HSTS, CSRF token, X-Frame-Options, X-Content-Type-Options güvenlik başlıkları |
 | FO-02 | Performans | Analiz süresi < 3 saniye |
 | FO-03 | Rate Limiting | Dakikada en fazla 10 analiz isteği (kötüye kullanım önleme) |
-| FO-04 | Şifre güvenliği | Minimum 6 karakter, bcrypt hash ile saklanır |
+| FO-04 | Şifre güvenliği | Minimum 8 karakter, büyük/küçük harf, rakam ve sembol zorunlu; bcrypt hash ile saklanır |
 | FO-05 | KVKK uyumu | Kullanıcı verisi açık rıza ile toplanır, kayıt formunda onay zorunludur |
 | FO-06 | Kullanılabilirlik | Mobil uyumlu (responsive) Bootstrap 5 arayüzü |
 | FO-07 | Ölçeklenebilirlik | PostgreSQL connection pooling ile eşzamanlı istekler desteklenir |

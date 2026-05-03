@@ -1,0 +1,316 @@
+@{
+    ViewData["Title"] = "Gizlilik Politikası & KVKK Aydınlatma Metni";
+}
+
+<div class="container py-5" style="max-width:860px">
+
+    <!-- Header -->
+    <div class="mb-5 sa-anim-fadein">
+        <p class="sa-section-title mb-1">
+            <i class="bi bi-shield-lock-fill me-2" style="color:var(--sa-accent)"></i>Gizlilik Politikası
+        </p>
+        <p class="text-muted small mb-0">KVKK (6698 Sayılı Kişisel Verilerin Korunması Kanunu) kapsamında Aydınlatma Metni</p>
+        <p class="text-muted" style="font-size:.78rem">Son güncelleme: Mart 2026</p>
+    </div>
+
+    <!-- 1. Veri Sorumlusu -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">1</span>
+            Veri Sorumlusu
+        </h5>
+        <p style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.7">
+            Bu aydınlatma metni, <strong style="color:var(--sa-text-pri)">SemptomAnaliz</strong> uygulaması tarafından,
+            6698 sayılı Kişisel Verilerin Korunması Kanunu'nun ("KVKK") 10. maddesi uyarınca,
+            kişisel verilerinizin işlenmesine ilişkin bilgi vermek amacıyla hazırlanmıştır.
+        </p>
+        <p style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.7">
+            SemptomAnaliz, bireysel sağlık farkındalığı amacıyla kullanıcıların belirtilerini kayıt altına alıp
+            istatistiksel benzerlik analizi yapan bir karar destek aracıdır; <strong>tıbbi teşhis hizmeti vermez.</strong>
+        </p>
+    </div>
+
+    <!-- 2. İşlenen Veriler -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">2</span>
+            İşlenen Kişisel Veriler
+        </h5>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <p class="fw-semibold small mb-2" style="color:var(--sa-text-pri)">
+                        <i class="bi bi-person-fill me-1" style="color:var(--sa-accent)"></i>
+                        Kimlik & İletişim Bilgileri
+                    </p>
+                    <ul class="mb-0 ps-3" style="color:var(--sa-text-sec);font-size:.85rem;line-height:1.8">
+                        <li>Ad, soyad</li>
+                        <li>E-posta adresi</li>
+                        <li>Şifre (bcrypt hash — düz metin saklanmaz)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <p class="fw-semibold small mb-2" style="color:var(--sa-text-pri)">
+                        <i class="bi bi-heart-pulse-fill me-1" style="color:#F43F5E"></i>
+                        Özel Nitelikli Sağlık Verileri
+                    </p>
+                    <ul class="mb-0 ps-3" style="color:var(--sa-text-sec);font-size:.85rem;line-height:1.8">
+                        <li>Yaş, cinsiyet</li>
+                        <li>Boy, kilo (VKİ hesabı)</li>
+                        <li>Seçilen belirtiler ve süreleri</li>
+                        <li>Kronik hastalık bilgileri</li>
+                        <li>Analiz sonuçları ve geçmiş</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <p class="fw-semibold small mb-2" style="color:var(--sa-text-pri)">
+                        <i class="bi bi-gear-fill me-1" style="color:#8B5CF6"></i>
+                        Teknik Log Verileri
+                    </p>
+                    <ul class="mb-0 ps-3" style="color:var(--sa-text-sec);font-size:.85rem;line-height:1.8">
+                        <li>IP adresi (rate limiting)</li>
+                        <li>Giriş/çıkış zaman damgaları</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25)">
+                    <p class="fw-semibold small mb-2" style="color:#FCD34D">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        Önemli Not
+                    </p>
+                    <p class="mb-0" style="color:var(--sa-text-sec);font-size:.83rem;line-height:1.7">
+                        Sağlık verileri KVKK kapsamında <strong style="color:#FCD34D">özel nitelikli kişisel veri</strong>
+                        olup yalnızca açık onayınızla işlenmektedir.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. İşlenme Amaçları -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">3</span>
+            Verilerin İşlenme Amaçları
+        </h5>
+        <ul style="color:var(--sa-text-sec);font-size:.9rem;line-height:2">
+            <li>Kullanıcı hesabının oluşturulması ve yönetilmesi</li>
+            <li>Semptom benzerlik analizi yapılması (Naive Bayes tabanlı istatistiksel hesaplama)</li>
+            <li>Analiz geçmişinin kullanıcıya gösterilmesi ve tekrar ziyaret tespiti</li>
+            <li>Kişiselleştirilmiş sağlık farkındalık içeriği sunulması</li>
+            <li>Sistemin güvenliği ve kötüye kullanımın önlenmesi (rate limiting)</li>
+            <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+        </ul>
+    </div>
+
+    <!-- 4. Hukuki Dayanak -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">4</span>
+            Hukuki Dayanak
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-sm" style="color:var(--sa-text-sec);font-size:.87rem;border-color:var(--sa-border)">
+                <thead>
+                    <tr style="border-color:var(--sa-border)">
+                        <th style="color:var(--sa-text-pri);background:var(--sa-bg-raised);border-color:var(--sa-border)">Veri Kategorisi</th>
+                        <th style="color:var(--sa-text-pri);background:var(--sa-bg-raised);border-color:var(--sa-border)">Hukuki Dayanak (KVKK md.5/6)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-color:var(--sa-border)">
+                        <td>Kimlik, e-posta, şifre</td>
+                        <td>Sözleşmenin kurulması ve ifası (md. 5/2-c)</td>
+                    </tr>
+                    <tr style="border-color:var(--sa-border)">
+                        <td>Sağlık verileri (belirtiler, kronik hastalık)</td>
+                        <td>Açık rıza (md. 6/2)</td>
+                    </tr>
+                    <tr style="border-color:var(--sa-border)">
+                        <td>IP adresi, log verileri</td>
+                        <td>Meşru menfaat (md. 5/2-f)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. Veri Güvenliği -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">5</span>
+            Veri Güvenliği Tedbirleri
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <i class="bi bi-lock-fill fs-4 mb-2 d-block" style="color:var(--sa-accent)"></i>
+                    <p class="small fw-semibold mb-1" style="color:var(--sa-text-pri)">HTTPS / TLS</p>
+                    <p class="small mb-0" style="color:var(--sa-text-sec)">Tüm iletişim şifreli kanal üzerinden</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <i class="bi bi-key-fill fs-4 mb-2 d-block" style="color:#10B981"></i>
+                    <p class="small fw-semibold mb-1" style="color:var(--sa-text-pri)">Bcrypt Hash</p>
+                    <p class="small mb-0" style="color:var(--sa-text-sec)">Şifreler düz metin olarak saklanmaz</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                    <i class="bi bi-shield-check-fill fs-4 mb-2 d-block" style="color:#8B5CF6"></i>
+                    <p class="small fw-semibold mb-1" style="color:var(--sa-text-pri)">Güvenlik Başlıkları</p>
+                    <p class="small mb-0" style="color:var(--sa-text-sec)">X-Frame-Options, CSP, HSTS aktif</p>
+                </div>
+            </div>
+        </div>
+        <p class="mt-3 mb-0" style="color:var(--sa-text-sec);font-size:.88rem">
+            Veriler Supabase (PostgreSQL) altyapısında saklanmakta olup fiziksel güvenlik ve yedekleme
+            Supabase'in sorumluluğundadır. Supabase, SOC 2 Type 2 sertifikalıdır.
+        </p>
+    </div>
+
+    <!-- 6. Aktarım -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">6</span>
+            Üçüncü Taraflara Veri Aktarımı
+        </h5>
+        <p style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.7">
+            Kişisel verileriniz; reklam, pazarlama veya analitik amaçlarla hiçbir üçüncü tarafla paylaşılmamaktadır.
+            Veriler yalnızca aşağıdaki teknik tedarikçilerle, hizmetin sunulması amacıyla paylaşılmaktadır:
+        </p>
+        <ul style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.8">
+            <li><strong style="color:var(--sa-text-pri)">Supabase Inc.</strong> — Veritabanı barındırma (ABD, AWS altyapısı)</li>
+        </ul>
+        <p style="color:var(--sa-text-sec);font-size:.88rem">
+            Yasal zorunluluk halinde yetkili kamu kurum ve kuruluşlarıyla veri paylaşılabilir.
+        </p>
+    </div>
+
+    <!-- 7. Haklarınız -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">7</span>
+            KVKK Kapsamındaki Haklarınız
+        </h5>
+        <p style="color:var(--sa-text-sec);font-size:.88rem;margin-bottom:12px">
+            KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:
+        </p>
+        <div class="row g-2">
+            @{
+                var rights = new[]
+                {
+                    ("bi-search", "Bilgi edinme", "Verilerinizin işlenip işlenmediğini öğrenme"),
+                    ("bi-eye", "Erişim", "İşlenen verilerinize erişim talep etme"),
+                    ("bi-pencil-square", "Düzeltme", "Eksik veya yanlış verilerin düzeltilmesini isteme"),
+                    ("bi-trash3", "Silme", "Koşullar oluştuğunda verilerin silinmesini talep etme"),
+                    ("bi-hand-index-thumb", "İtiraz", "Otomatik sistemle aleyhinize karar çıkarılmasına itiraz etme"),
+                    ("bi-x-circle", "Rıza geri alma", "Sağlık verisi işleme onayınızı istediğiniz zaman geri çekme"),
+                };
+            }
+            @foreach (var (icon, title, desc) in rights)
+            {
+                <div class="col-md-4">
+                    <div class="p-2 rounded-3 d-flex gap-2 align-items-start" style="background:var(--sa-bg-raised);border:1px solid var(--sa-border)">
+                        <i class="bi @icon mt-1" style="color:var(--sa-accent);font-size:.9rem;flex-shrink:0"></i>
+                        <div>
+                            <p class="mb-0 fw-semibold" style="font-size:.82rem;color:var(--sa-text-pri)">@title</p>
+                            <p class="mb-0" style="font-size:.78rem;color:var(--sa-text-sec)">@desc</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="mt-3 p-3 rounded-3" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25)">
+            <p class="mb-0" style="color:var(--sa-text-sec);font-size:.87rem">
+                <i class="bi bi-envelope-fill me-1" style="color:var(--sa-accent)"></i>
+                Haklarınızı kullanmak için uygulama içi hesap ayarlarından veya
+                <strong style="color:var(--sa-text-pri)">kvkk@semptomanaliz.app</strong> adresine e-posta göndererek
+                başvurabilirsiniz. Başvurular 30 gün içinde yanıtlanır.
+            </p>
+        </div>
+    </div>
+
+    <!-- 8. Çerezler -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">8</span>
+            Çerezler (Cookies)
+        </h5>
+        <p style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.7">
+            Uygulama yalnızca oturum yönetimi için zorunlu çerezler kullanmaktadır.
+            Reklam veya izleme amacıyla herhangi bir üçüncü taraf çerezi kullanılmamaktadır.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm" style="color:var(--sa-text-sec);font-size:.84rem;border-color:var(--sa-border)">
+                <thead>
+                    <tr style="border-color:var(--sa-border)">
+                        <th style="color:var(--sa-text-pri);background:var(--sa-bg-raised);border-color:var(--sa-border)">Çerez</th>
+                        <th style="color:var(--sa-text-pri);background:var(--sa-bg-raised);border-color:var(--sa-border)">Amacı</th>
+                        <th style="color:var(--sa-text-pri);background:var(--sa-bg-raised);border-color:var(--sa-border)">Süre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-color:var(--sa-border)">
+                        <td><code>.AspNetCore.Identity.Application</code></td>
+                        <td>Oturum kimlik doğrulama</td>
+                        <td>Tarayıcı kapanana kadar</td>
+                    </tr>
+                    <tr style="border-color:var(--sa-border)">
+                        <td><code>.AspNetCore.Antiforgery.*</code></td>
+                        <td>CSRF saldırısı önleme</td>
+                        <td>Oturum süresi</td>
+                    </tr>
+                    <tr style="border-color:var(--sa-border)">
+                        <td><code>TempData</code></td>
+                        <td>Tek seferlik bildirimler</td>
+                        <td>Tek istek</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 9. Saklama Süresi -->
+    <div class="sa-card mb-4 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">9</span>
+            Veri Saklama Süreleri
+        </h5>
+        <ul style="color:var(--sa-text-sec);font-size:.9rem;line-height:2">
+            <li>Hesap verileri: Hesap aktif olduğu süre + silme talebinden itibaren 30 gün</li>
+            <li>Analiz geçmişi: Hesap aktif olduğu süre</li>
+            <li>Log ve IP verileri: 90 gün</li>
+        </ul>
+        <p style="color:var(--sa-text-sec);font-size:.88rem">
+            Hesabınızı sildiğinizde tüm kişisel verileriniz ve analiz geçmişiniz 30 gün içinde kalıcı olarak imha edilir.
+        </p>
+    </div>
+
+    <!-- 10. Değişiklikler -->
+    <div class="sa-card mb-5 sa-anim-fadein-d1">
+        <h5 class="fw-bold mb-3" style="color:var(--sa-text-pri)">
+            <span class="badge rounded-pill me-2" style="background:var(--sa-accent);font-size:.7rem">10</span>
+            Politika Değişiklikleri
+        </h5>
+        <p style="color:var(--sa-text-sec);font-size:.9rem;line-height:1.7">
+            Bu politika gerektiğinde güncellenebilir. Önemli değişiklikler olduğunda kayıtlı e-posta adresinize
+            bildirim gönderilecektir. Güncel politika her zaman bu sayfada yayımlanacaktır.
+        </p>
+    </div>
+
+    <!-- Back button -->
+    <div class="text-center mb-5">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Geri Dön
+        </a>
+    </div>
+
+</div>

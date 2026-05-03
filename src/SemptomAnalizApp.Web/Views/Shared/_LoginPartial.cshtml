@@ -1,0 +1,27 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<Kullanici> SignInManager
+@inject UserManager<Kullanici> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Profil" asp-action="Index" title="Profil">@User.Identity?.Name</a>
+    </li>
+    <li class="nav-item">
+        <form asp-controller="Hesap" asp-action="Cikis" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="nav-link btn btn-link">Çıkış</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Hesap" asp-action="Kayit">Kayıt Ol</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Hesap" asp-action="Giris">Giriş Yap</a>
+    </li>
+}
+</ul>

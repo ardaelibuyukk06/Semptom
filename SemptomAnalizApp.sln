@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Core", "SemptomAnalizApp.Core\SemptomAnalizApp.Core.csproj", "{FEE85F23-D12B-4581-A41C-2C0997FAE53E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Core", "src\SemptomAnalizApp.Core\SemptomAnalizApp.Core.csproj", "{FEE85F23-D12B-4581-A41C-2C0997FAE53E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Data", "SemptomAnalizApp.Data\SemptomAnalizApp.Data.csproj", "{7A8B7899-CE3A-488E-97F8-CF4C51F721BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Data", "src\SemptomAnalizApp.Data\SemptomAnalizApp.Data.csproj", "{7A8B7899-CE3A-488E-97F8-CF4C51F721BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Service", "SemptomAnalizApp.Service\SemptomAnalizApp.Service.csproj", "{AB099734-D512-4931-A239-FD62D0F9C4C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Service", "src\SemptomAnalizApp.Service\SemptomAnalizApp.Service.csproj", "{AB099734-D512-4931-A239-FD62D0F9C4C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Web", "SemptomAnalizApp.Web\SemptomAnalizApp.Web.csproj", "{1B63E354-9F72-4EA9-AE6C-A52C268AD811}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Web", "src\SemptomAnalizApp.Web\SemptomAnalizApp.Web.csproj", "{1B63E354-9F72-4EA9-AE6C-A52C268AD811}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Tests", "SemptomAnalizApp.Tests\SemptomAnalizApp.Tests.csproj", "{186A68BD-CAF2-4D4B-8DDD-D5EA08622736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemptomAnalizApp.Tests", "src\SemptomAnalizApp.Tests\SemptomAnalizApp.Tests.csproj", "{186A68BD-CAF2-4D4B-8DDD-D5EA08622736}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
