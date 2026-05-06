@@ -17,6 +17,9 @@ public static class DbSeeder
         string? adminPassword = null,
         bool seedDemoUsers = false)
     {
+        // Supabase/PostgreSQL üzerindeki tüm tabloları otomatik oluşturur (Eğer yoksa)
+        await context.Database.EnsureCreatedAsync();
+
         // ── Roller ────────────────────────────────────────────────────
         foreach (var rol in new[] { "Admin", "Kullanici" })
         {
