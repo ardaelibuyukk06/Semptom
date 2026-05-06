@@ -7,8 +7,6 @@ obj/
 *.userprefs
 
 ## User Secrets & local config (NEVER commit these)
-**/appsettings.json
-**/appsettings.Development.json
 **/appsettings.Local.json
 **/secrets.json
 **/.env
