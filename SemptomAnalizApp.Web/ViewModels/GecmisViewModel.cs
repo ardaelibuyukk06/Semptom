@@ -20,7 +20,7 @@ public class GecmisAyGrubu
 public class GecmisKayit
 {
     public int OturumId { get; set; }
-    public int SonucId { get; set; }
+    public int? SonucId { get; set; }
     public DateTime Tarih { get; set; }
     public List<string> Semptomlar { get; set; } = [];
     public string AciliyetEtiketi { get; set; } = string.Empty;

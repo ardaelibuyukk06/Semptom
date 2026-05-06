@@ -59,7 +59,7 @@ public class GecmisController(AppDbContext db, UserManager<Kullanici> userManage
                             return new GecmisKayit
                             {
                                 OturumId = o.Id,
-                                SonucId = o.AnalizSonucu?.Id ?? 0,
+                                SonucId = o.AnalizSonucu?.Id,
                                 Tarih = o.OlusturulmaTarihi,
                                 Semptomlar = o.AnalizSemptomlari
                                     .Select(s => s.SemptomKatalog?.Ad ?? "")

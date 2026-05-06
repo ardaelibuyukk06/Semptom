@@ -46,7 +46,8 @@ else
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite(conn));
+    opt.UseNpgsql(conn)
+       .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddIdentity<Kullanici, IdentityRole>(opt =>
 {
@@ -80,7 +81,15 @@ using (var scope = app.Services.CreateScope())
     var um = scope.ServiceProvider.GetRequiredService<UserManager<Kullanici>>();
     var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var adminPwd = app.Configuration["Seed:AdminPassword"];
-    await DbSeeder.SeedAsync(db, um, rm, adminPwd);
+    try
+    {
+        await DbSeeder.SeedAsync(db, um, rm, adminPwd);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabanı seed işlemi sırasında hata oluştu.");
+    }
 }
 
 if (!app.Environment.IsDevelopment())

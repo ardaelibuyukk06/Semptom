@@ -1,69 +1,274 @@
 @using SemptomAnalizApp.Core.Entities
 @using SemptomAnalizApp.Core.Enums
 @{
-    ViewData["Title"] = "Admin Paneli";
+    ViewData["Title"] = "Yönetim Merkezi";
     var kullanicilar = ViewBag.Kullanicilar as List<Kullanici> ?? [];
     var sonAnalizler = ViewBag.SonAnalizler as List<AnalizOturumu> ?? [];
 }
 
-<div class="container py-4">
-    <form class="d-none">
-        @Html.AntiForgeryToken()
-    </form>
+<style>
+    /* Premium Admin Dashboard Styles */
+    .sa-admin-header {
+        position: relative;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(244, 63, 94, 0.05) 100%);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .sa-admin-header::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 60%);
+        pointer-events: none;
+    }
+    
+    .sa-stat-premium {
+        background: var(--sa-bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .sa-stat-premium:hover {
+        transform: translateY(-5px);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+    .sa-stat-icon-wrap {
+        width: 54px; height: 54px;
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .sa-stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 0.2rem;
+        background: linear-gradient(to right, #ffffff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .sa-stat-label {
+        color: var(--sa-text-sec);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
 
-    <div class="d-flex align-items-center justify-content-between mb-4 sa-anim-fadein">
-        <div>
-            <p class="sa-section-title">Yönetim</p>
-            <h1 class="sa-page-title">Admin Paneli</h1>
+    .sa-table-premium {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    .sa-table-premium th {
+        color: var(--sa-text-sec);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 1rem 0.5rem;
+        border: none;
+    }
+    .sa-table-premium td {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(255,255,255,0.02);
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+        transition: background 0.2s;
+    }
+    .sa-table-premium tr td:first-child {
+        border-left: 1px solid rgba(255,255,255,0.02);
+        border-radius: 12px 0 0 12px;
+    }
+    .sa-table-premium tr td:last-child {
+        border-right: 1px solid rgba(255,255,255,0.02);
+        border-radius: 0 12px 12px 0;
+    }
+    .sa-table-premium tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .sa-avatar {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.9rem;
+        color: #fff;
+    }
+    
+    .sa-badge-glow {
+        position: relative;
+    }
+    .sa-badge-glow::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: inherit; filter: blur(4px); opacity: 0.5; z-index: -1;
+    }
+    .sa-badge-danger { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .sa-badge-danger::before { background: #f43f5e; }
+    
+    .sa-badge-warning { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sa-badge-warning::before { background: #f59e0b; }
+    
+    .sa-badge-info { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .sa-badge-info::before { background: #38bdf8; }
+    
+    .sa-badge-success { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .sa-badge-success::before { background: #22c55e; }
+</style>
+
+<div class="container py-4">
+    <!-- Premium Header -->
+    <div class="sa-admin-header d-flex flex-column flex-md-row align-items-md-center justify-content-between sa-anim-fadein">
+        <div class="mb-3 mb-md-0 position-relative z-1">
+            <span class="badge" style="background: rgba(99,102,241,0.2); color: #a5b4fc; margin-bottom: 8px;">
+                <i class="bi bi-cpu-fill me-1"></i>Sistem Kontrol
+            </span>
+            <h1 class="fw-bold mb-1" style="font-size: 2rem; color: #fff; letter-spacing:-0.5px;">Yönetim Merkezi</h1>
+            <p class="mb-0" style="color: var(--sa-text-sec);">SemptomAnaliz platformunun genel durumunu izleyin.</p>
         </div>
-        <span class="badge bg-danger rounded-pill px-3 py-2">
-            <i class="bi bi-shield-check me-1"></i>Admin Erişimi
-        </span>
+        <div class="position-relative z-1">
+            <div class="d-flex align-items-center gap-3 px-4 py-3 rounded-4" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #f43f5e, #fb923c); display: flex; align-items:center; justify-content:center; box-shadow: 0 0 15px rgba(244,63,94,0.4);">
+                    <i class="bi bi-shield-lock-fill fs-5 text-white"></i>
+                </div>
+                <div>
+                    <div class="small" style="color:var(--sa-text-sec)">Yetki Seviyesi</div>
+                    <div class="fw-bold text-white">Super Admin</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Stat Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3 sa-anim-fadein-d1">
-            <div class="sa-stat-card">
-                <div class="sa-stat-value sa-counter" data-target="@ViewBag.ToplamKullanici">0</div>
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-sm-6 col-xl-3 sa-anim-fadein-d1">
+            <div class="sa-stat-premium">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="sa-stat-icon-wrap" style="background: rgba(99,102,241,0.1); color: #818cf8;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background: rgba(34,197,94,0.15); color: #4ade80;">
+                        <i class="bi bi-arrow-up-short"></i>Aktif
+                    </span>
+                </div>
+                <div class="sa-stat-value">@ViewBag.ToplamKullanici</div>
                 <div class="sa-stat-label">Toplam Kullanıcı</div>
+                <div class="position-absolute" style="right: -10px; bottom: -20px; font-size: 8rem; opacity: 0.03; color: #818cf8; pointer-events:none;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 sa-anim-fadein-d2">
-            <div class="sa-stat-card">
-                <div class="sa-stat-value sa-counter" data-target="@ViewBag.ToplamAnaliz">0</div>
-                <div class="sa-stat-label">Toplam Analiz</div>
+        
+        <div class="col-12 col-sm-6 col-xl-3 sa-anim-fadein-d2">
+            <div class="sa-stat-premium">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="sa-stat-icon-wrap" style="background: rgba(16,185,129,0.1); color: #34d399;">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background: rgba(56,189,248,0.15); color: #38bdf8;">
+                        <i class="bi bi-graph-up"></i>Motor
+                    </span>
+                </div>
+                <div class="sa-stat-value">@ViewBag.ToplamAnaliz</div>
+                <div class="sa-stat-label">İşlenen Analiz</div>
+                <div class="position-absolute" style="right: -10px; bottom: -20px; font-size: 8rem; opacity: 0.03; color: #34d399; pointer-events:none;">
+                    <i class="bi bi-activity"></i>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 sa-anim-fadein-d3">
-            <div class="sa-stat-card">
-                <div class="sa-stat-value sa-counter" data-target="@ViewBag.BugunGiris">0</div>
-                <div class="sa-stat-label">Yeni Kayıt (24s)</div>
+
+        <div class="col-12 col-sm-6 col-xl-3 sa-anim-fadein-d3">
+            <div class="sa-stat-premium">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="sa-stat-icon-wrap" style="background: rgba(245,158,11,0.1); color: #fbbf24;">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+                        Son 24s
+                    </span>
+                </div>
+                <div class="sa-stat-value">@ViewBag.BugunGiris</div>
+                <div class="sa-stat-label">Yeni Kayıt</div>
+                <div class="position-absolute" style="right: -10px; bottom: -20px; font-size: 8rem; opacity: 0.03; color: #fbbf24; pointer-events:none;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3 sa-anim-fadein-d4">
-            <div class="sa-stat-card">
-                <div class="sa-stat-value text-danger">@ViewBag.AcilSayisi</div>
-                <div class="sa-stat-label">Acil Sonuçlar</div>
+
+        <div class="col-12 col-sm-6 col-xl-3 sa-anim-fadein-d4">
+            <div class="sa-stat-premium">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="sa-stat-icon-wrap" style="background: rgba(244,63,94,0.1); color: #fb7185;">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background: rgba(244,63,94,0.15); color: #fb7185;">
+                        Kritik
+                    </span>
+                </div>
+                <div class="sa-stat-value" style="background: linear-gradient(to right, #fff, #fb7185); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    @ViewBag.AcilSayisi
+                </div>
+                <div class="sa-stat-label">Acil Vakalar</div>
+                <div class="position-absolute" style="right: -10px; bottom: -20px; font-size: 8rem; opacity: 0.03; color: #fb7185; pointer-events:none;">
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
         <!-- Kullanıcılar -->
-        <div class="col-md-6 sa-anim-fadein-d3">
-            <div class="sa-card h-100">
-                <p class="sa-section-title">Son Kullanıcılar</p>
+        <div class="col-xl-6 sa-anim-fadein-d3">
+            <div class="sa-card h-100 p-4 border-0" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-white"><i class="bi bi-people text-primary me-2"></i>Son Kayıtlar</h5>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size:0.8rem">Tümünü Gör</button>
+                </div>
                 <div class="table-responsive">
-                    <table class="table sa-admin-table mb-0">
-                        <thead><tr><th>Ad Soyad</th><th>E-posta</th><th>Kayıt</th></tr></thead>
+                    <table class="sa-table-premium">
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>E-Posta</th>
+                                <th class="text-end">Tarih</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach (var k in kullanicilar)
                             {
+                                var initials = (!string.IsNullOrEmpty(k.Ad) ? k.Ad[..1] : "") + (!string.IsNullOrEmpty(k.Soyad) ? k.Soyad[..1] : "");
+                                var hash = Math.Abs(k.Email.GetHashCode()) % 5;
+                                string[] colors = { "#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6" };
+                                var bgColor = colors[hash];
+
                                 <tr>
-                                    <td class="fw-semibold small" style="color:#D0E4F8">@k.Ad @k.Soyad</td>
-                                    <td class="small" style="color:#7A9AB8">@k.Email</td>
-                                    <td class="small" style="color:#6E8FAA">@k.KayitTarihi.ToLocalTime().ToString("dd.MM.yy")</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="sa-avatar shadow-sm" style="background: @bgColor;">
+                                                @initials.ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-white" style="font-size:0.9rem">@k.Ad @k.Soyad</div>
+                                                <div style="font-size:0.75rem; color:var(--sa-text-sec)">Hesap ID: @k.Id[..6]</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="color:#a5b4fc; font-size:0.85rem;">@k.Email</td>
+                                    <td class="text-end">
+                                        <span class="badge rounded-pill" style="background: rgba(255,255,255,0.05); color: var(--sa-text-sec); border: 1px solid rgba(255,255,255,0.1);">
+                                            <i class="bi bi-calendar3 me-1"></i>@k.KayitTarihi.ToLocalTime().ToString("dd MMM yyyy")
+                                        </span>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -73,34 +278,68 @@
         </div>
 
         <!-- Son Analizler -->
-        <div class="col-md-6 sa-anim-fadein-d4">
-            <div class="sa-card h-100">
-                <p class="sa-section-title">Son Analizler</p>
+        <div class="col-xl-6 sa-anim-fadein-d4">
+            <div class="sa-card h-100 p-4 border-0" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-white"><i class="bi bi-activity text-success me-2"></i>Analiz Akışı</h5>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size:0.8rem">Tümünü Gör</button>
+                </div>
                 <div class="table-responsive">
-                    <table class="table sa-admin-table mb-0">
-                        <thead><tr><th>Kullanıcı</th><th>Semptomlar</th><th>Aciliyet</th></tr></thead>
+                    <table class="sa-table-premium">
+                        <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Ana Bulgular</th>
+                                <th class="text-end">Durum</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach (var o in sonAnalizler)
                             {
-                                string renk = "success";
+                                string badgeClass = "sa-badge-success";
                                 string etiket = "Normal";
                                 if (o.AnalizSonucu != null)
                                 {
-                                    (etiket, renk) = o.AnalizSonucu.AciliyetSeviyesi switch {
-                                        AciliyetSeviyesi.Acil    => ("Acil", "danger"),
-                                        AciliyetSeviyesi.Dikkat  => ("Dikkat", "warning"),
-                                        AciliyetSeviyesi.Izle    => ("İzle", "info"),
-                                        _ => ("Normal", "success")
+                                    (etiket, badgeClass) = o.AnalizSonucu.AciliyetSeviyesi switch {
+                                        AciliyetSeviyesi.Acil    => ("Acil Müdahale", "sa-badge-danger"),
+                                        AciliyetSeviyesi.Dikkat  => ("Dikkat Gerekli", "sa-badge-warning"),
+                                        AciliyetSeviyesi.Izle    => ("İzlemde", "sa-badge-info"),
+                                        _ => ("Normal", "sa-badge-success")
                                     };
                                 }
+                                
+                                var initials = (!string.IsNullOrEmpty(o.Kullanici?.Ad) ? o.Kullanici?.Ad[..1] : "U") + (!string.IsNullOrEmpty(o.Kullanici?.Soyad) ? o.Kullanici?.Soyad[..1] : "");
+                                
                                 <tr>
-                                    <td class="small fw-semibold" style="color:#D0E4F8">@o.Kullanici?.Ad</td>
-                                    <td class="small" style="color:#7A9AB8">
-                                        @string.Join(", ", o.AnalizSemptomlari.Select(s => s.SemptomKatalog?.Ad ?? "").Take(2))
-                                        @if (o.AnalizSemptomlari.Count > 2) { <span>+@(o.AnalizSemptomlari.Count - 2)</span> }
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="sa-avatar" style="width:28px;height:28px;font-size:0.7rem;background:rgba(255,255,255,0.1)">
+                                                @initials?.ToUpper()
+                                            </div>
+                                            <span class="fw-semibold text-white" style="font-size:0.85rem">@(o.Kullanici?.Ad ?? "Bilinmiyor")</span>
+                                        </div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-@renk rounded-pill">@etiket</span>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach(var symp in o.AnalizSemptomlari.Select(s => s.SemptomKatalog?.Ad ?? "").Take(2))
+                                            {
+                                                <span class="badge" style="background:rgba(255,255,255,0.05); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); font-weight:500;">
+                                                    @symp
+                                                </span>
+                                            }
+                                            @if (o.AnalizSemptomlari.Count > 2) { 
+                                                <span class="badge" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">
+                                                    +@(o.AnalizSemptomlari.Count - 2)
+                                                </span> 
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge rounded-pill px-3 py-2 sa-badge-glow @badgeClass">
+                                            @if(badgeClass == "sa-badge-danger"){ <i class="bi bi-exclamation-triangle-fill me-1"></i> }
+                                            else if(badgeClass == "sa-badge-success"){ <i class="bi bi-check-circle-fill me-1"></i> }
+                                            @etiket
+                                        </span>
                                     </td>
                                 </tr>
                             }

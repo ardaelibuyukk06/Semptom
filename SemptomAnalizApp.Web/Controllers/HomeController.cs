@@ -19,6 +19,8 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
         return View();
     }
 
+    public IActionResult Privacy() => View();
+
     [Authorize]
     public async Task<IActionResult> Dashboard()
     {
@@ -34,6 +36,7 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
                 .ThenInclude(s => s.SemptomKatalog)
             .Where(o => o.KullaniciId == kullanici.Id)
             .OrderByDescending(o => o.OlusturulmaTarihi)
+            .Take(100)
             .ToListAsync();
 
         var son30Gun = DateTime.UtcNow.AddDays(-30);

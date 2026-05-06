@@ -8,6 +8,7 @@ using SemptomAnalizApp.Core.Entities;
 using SemptomAnalizApp.Core.Enums;
 using SemptomAnalizApp.Data;
 using SemptomAnalizApp.Service.Interfaces;
+using SemptomAnalizApp.Service.Services;
 using SemptomAnalizApp.Web.ViewModels;
 
 namespace SemptomAnalizApp.Web.Controllers;
@@ -16,12 +17,8 @@ namespace SemptomAnalizApp.Web.Controllers;
 public class AnalizController(
     AppDbContext db,
     UserManager<Kullanici> userManager,
-    IAnalizService analizService,
-    ILogger<AnalizController> logger) : Controller
+    IAnalizService analizService) : Controller
 {
-    private const int MaxSemptomSayisi = 30;
-    private const int MaxSureGun = 365;
-
     private static readonly Dictionary<SemptomKategorisi, (string Ad, string Ikon)> KategoriMeta = new()
     {
         [SemptomKategorisi.BasBoyun]  = ("Baş / Boyun", "bi-emoji-dizzy"),
@@ -71,61 +68,30 @@ public class AnalizController(
         [FromForm] string? sureler,
         [FromForm] string? ekNotlar)
     {
-        try
+        var kullanici = await userManager.GetUserAsync(User);
+        if (kullanici == null) return RedirectToAction("Giris", "Hesap");
+
+        var idList  = semptomIdler?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse).ToList() ?? [];
+        var sidList = siddetler?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse).ToList() ?? [];
+        var surList = sureler?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse).ToList() ?? [];
+
+        if (idList.Count == 0)
         {
-            var kullanici = await userManager.GetUserAsync(User);
-            if (kullanici == null) return RedirectToAction("Giris", "Hesap");
-
-            if (!TryParseIntCsv(semptomIdler, 1, int.MaxValue, MaxSemptomSayisi, out var idList) ||
-                !TryParseIntCsv(siddetler, 1, 3, MaxSemptomSayisi, out var sidList) ||
-                !TryParseIntCsv(sureler, 1, MaxSureGun, MaxSemptomSayisi, out var surList))
-            {
-                TempData["Hata"] = "Semptom bilgileri geçersiz. Lütfen seçimlerinizi kontrol edip tekrar deneyiniz.";
-                return RedirectToAction("Yeni");
-            }
-
-            if (idList.Count == 0)
-            {
-                TempData["Hata"] = "Lütfen en az bir semptom seçiniz.";
-                return RedirectToAction("Yeni");
-            }
-
-            var benzersizIdler = idList.Distinct().ToList();
-            var aktifSemptomIdleri = await db.SemptomKatalog
-                .Where(s => benzersizIdler.Contains(s.Id) && s.Aktif)
-                .Select(s => s.Id)
-                .ToListAsync();
-
-            if (aktifSemptomIdleri.Count != benzersizIdler.Count)
-            {
-                TempData["Hata"] = "Seçilen semptomlardan biri geçersiz veya pasif durumda.";
-                return RedirectToAction("Yeni");
-            }
-
-            var aktifSemptomSet = aktifSemptomIdleri.ToHashSet();
-            var eklenenIdler = new HashSet<int>();
-            var girdiler = new List<SemptomGirdisi>();
-
-            for (var i = 0; i < idList.Count; i++)
-            {
-                var id = idList[i];
-                if (!aktifSemptomSet.Contains(id) || !eklenenIdler.Add(id)) continue;
-
-                girdiler.Add(new SemptomGirdisi(
-                    id,
-                    i < sidList.Count ? sidList[i] : 2,
-                    i < surList.Count ? surList[i] : 1));
-            }
-
-            var sonuc = await analizService.AnalizEtAsync(kullanici.Id, girdiler, ekNotlar);
-            return RedirectToAction("Sonuc", new { id = sonuc.Id });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Analiz oluşturulurken hata oluştu.");
-            TempData["Hata"] = "Analiz sırasında beklenmeyen bir hata oluştu. Lütfen tekrar deneyiniz.";
+            TempData["Hata"] = "Lütfen en az bir semptom seçiniz.";
             return RedirectToAction("Yeni");
         }
+
+        var girdiler = idList.Select((id, i) => new SemptomGirdisi(
+            id,
+            i < sidList.Count ? sidList[i] : 2,
+            i < surList.Count ? surList[i] : 1
+        ));
+
+        var sonuc = await analizService.AnalizEtAsync(kullanici.Id, girdiler, ekNotlar);
+        return RedirectToAction("Sonuc", new { id = sonuc.Id });
     }
 
     [HttpGet]
@@ -142,7 +108,8 @@ public class AnalizController(
 
         // Yetki kontrolü
         var kullanici = await userManager.GetUserAsync(User);
-        if (sonuc.AnalizOturumu.KullaniciId != kullanici!.Id && !User.IsInRole("Admin"))
+        if (kullanici == null) return RedirectToAction("Giris", "Hesap");
+        if (sonuc.AnalizOturumu.KullaniciId != kullanici.Id && !User.IsInRole("Admin"))
             return Forbid();
 
         var (etiket, renk, arkaPlan) = sonuc.AciliyetSeviyesi switch
@@ -246,22 +213,5 @@ public class AnalizController(
         };
 
         return View(model);
-    }
-
-    private static bool TryParseIntCsv(string? raw, int min, int max, int maxCount, out List<int> values)
-    {
-        values = [];
-        if (string.IsNullOrWhiteSpace(raw)) return true;
-
-        foreach (var part in raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (values.Count >= maxCount) return false;
-            if (!int.TryParse(part, out var value)) return false;
-            if (value < min || value > max) return false;
-
-            values.Add(value);
-        }
-
-        return true;
     }
 }

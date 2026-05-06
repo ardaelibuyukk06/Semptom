@@ -12,8 +12,6 @@ namespace SemptomAnalizApp.Web.Controllers;
 [Authorize]
 public class GecmisController(AppDbContext db, UserManager<Kullanici> userManager) : Controller
 {
-    private const int MaksimumGecmisKaydi = 120;
-
     private static readonly string[] AyAdlari =
         ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
          "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -28,7 +26,6 @@ public class GecmisController(AppDbContext db, UserManager<Kullanici> userManage
                 .ThenInclude(s => s.SemptomKatalog)
             .Where(o => o.KullaniciId == kullanici!.Id)
             .OrderByDescending(o => o.OlusturulmaTarihi)
-            .Take(MaksimumGecmisKaydi)
             .ToListAsync();
 
         var yilGruplari = oturumlar
@@ -62,7 +59,7 @@ public class GecmisController(AppDbContext db, UserManager<Kullanici> userManage
                             return new GecmisKayit
                             {
                                 OturumId = o.Id,
-                                SonucId = o.AnalizSonucu?.Id ?? 0,
+                                SonucId = o.AnalizSonucu?.Id,
                                 Tarih = o.OlusturulmaTarihi,
                                 Semptomlar = o.AnalizSemptomlari
                                     .Select(s => s.SemptomKatalog?.Ad ?? "")

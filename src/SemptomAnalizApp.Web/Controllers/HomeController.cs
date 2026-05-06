@@ -6,6 +6,7 @@ using SemptomAnalizApp.Core.Entities;
 using SemptomAnalizApp.Core.Enums;
 using SemptomAnalizApp.Data;
 using SemptomAnalizApp.Web.ViewModels;
+#pragma warning disable IDE0005
 
 namespace SemptomAnalizApp.Web.Controllers;
 
@@ -18,6 +19,8 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
         return View();
     }
 
+    public IActionResult Privacy() => View();
+
     [Authorize]
     public async Task<IActionResult> Dashboard()
     {
@@ -27,27 +30,22 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
         var profil = await db.SaglikProfilleri
             .FirstOrDefaultAsync(p => p.KullaniciId == kullanici.Id);
 
-        var toplamAnalizSayisi = await db.AnalizOturumlari
-            .Where(o => o.KullaniciId == kullanici.Id)
-            .CountAsync();
-
-        var sonAnalizler = await db.AnalizOturumlari
+        var oturumlar = await db.AnalizOturumlari
             .Include(o => o.AnalizSonucu)
             .Include(o => o.AnalizSemptomlari)
                 .ThenInclude(s => s.SemptomKatalog)
             .Where(o => o.KullaniciId == kullanici.Id)
             .OrderByDescending(o => o.OlusturulmaTarihi)
-            .Take(5)
+            .Take(100)
             .ToListAsync();
 
         var son30Gun = DateTime.UtcNow.AddDays(-30);
-        var tekrarlayan = await db.AnalizOturumlari
-            .Where(o => o.KullaniciId == kullanici.Id && o.OlusturulmaTarihi >= son30Gun)
+        var tekrarlayan = oturumlar
+            .Where(o => o.OlusturulmaTarihi >= son30Gun)
             .GroupBy(o => o.SemptomImzasi)
-            .Where(g => g.Count() > 1)
-            .CountAsync();
+            .Count(g => g.Count() > 1);
 
-        var sonOturum = sonAnalizler.FirstOrDefault();
+        var sonOturum = oturumlar.FirstOrDefault();
         string riskOzeti = "Normal";
         string riskRengi = "success";
         if (sonOturum?.AnalizSonucu != null)
@@ -62,22 +60,16 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
         }
 
         // Trend verisi: sonucu olan son 10 analiz, kronolojik sıraya çevrilmiş
-        var trendOturumlar = await db.AnalizOturumlari
-            .Include(o => o.AnalizSonucu)
-            .Where(o => o.KullaniciId == kullanici.Id && o.AnalizSonucu != null)
-            .OrderByDescending(o => o.OlusturulmaTarihi)
-            .Take(10)
-            .ToListAsync();
-
-        trendOturumlar = trendOturumlar
+        var trendOturumlar = oturumlar
             .Where(o => o.AnalizSonucu != null)
+            .Take(10)
             .Reverse()
             .ToList();
 
         var model = new DashboardViewModel
         {
             KullaniciAd = kullanici.Ad,
-            ToplamAnalizSayisi = toplamAnalizSayisi,
+            ToplamAnalizSayisi = oturumlar.Count,
             SonAnalizTarihi = sonOturum?.OlusturulmaTarihi,
             TekrarlayaniSemptomSayisi = tekrarlayan,
             RiskOzeti = riskOzeti,
@@ -89,7 +81,7 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
             TrendEtiketler = trendOturumlar
                 .Select(o => o.OlusturulmaTarihi.ToLocalTime().ToString("dd MMM"))
                 .ToList(),
-            SonAnalizler = sonAnalizler.Select(o =>
+            SonAnalizler = oturumlar.Take(5).Select(o =>
             {
                 var semptomAdlari = o.AnalizSemptomlari
                     .Select(s => s.SemptomKatalog?.Ad ?? "")
@@ -112,7 +104,7 @@ public class HomeController(AppDbContext db, UserManager<Kullanici> userManager)
 
                 return new SonAnalizSatiri
                 {
-                    Id = o.AnalizSonucu?.Id ?? 0,
+                    Id = o.Id,
                     Tarih = o.OlusturulmaTarihi,
                     AnaSemptomlar = string.Join(", ", semptomAdlari),
                     AciliyetEtiketi = etiket,

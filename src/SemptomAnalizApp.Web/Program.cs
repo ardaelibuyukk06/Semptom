@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SemptomAnalizApp.Core.Entities;
-using SemptomAnalizApp.Core.Interfaces;
 using SemptomAnalizApp.Data;
 using SemptomAnalizApp.Service.Interfaces;
-using SemptomAnalizApp.Service.Options;
 using SemptomAnalizApp.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,54 +23,39 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-// Veritabanı sağlayıcı seçimi:
-// 1) DATABASE_URL varsa → Railway PostgreSQL (UseNpgsql)
-// 2) appsettings'de DefaultConnection doluysa → o string'i kullan
-// 3) Hiçbiri yoksa → yerel geliştirme için SQLite
+// Railway PostgreSQL plugin DATABASE_URL'sini Npgsql formatına çevir
+string conn;
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 var configConn  = builder.Configuration.GetConnectionString("DefaultConnection");
 
-bool usePostgres = false;
-string conn;
-
-if (!string.IsNullOrWhiteSpace(databaseUrl))
-{
-    // Railway production: PostgreSQL
-    conn = BuildNpgsqlConnectionString(databaseUrl);
-    usePostgres = true;
-}
-else if (!string.IsNullOrWhiteSpace(configConn))
+if (!string.IsNullOrWhiteSpace(configConn))
 {
     conn = configConn;
-    // configConn Npgsql formatıysa PostgreSQL, değilse SQLite
-    usePostgres = conn.Contains("Host=", StringComparison.OrdinalIgnoreCase);
+}
+else if (!string.IsNullOrWhiteSpace(databaseUrl))
+{
+    // postgresql://user:pass@host:port/dbname → Npgsql formatına çevir
+    var uri  = new Uri(databaseUrl);
+    var user = uri.UserInfo.Split(':');
+    conn = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={user[0]};Password={user[1]};SSL Mode=Require;Trust Server Certificate=true;";
 }
 else
 {
-    // Yerel geliştirme: SQLite fallback
+    // Localhost çalışması için varsayılan olarak SQLite kullan
     conn = "Data Source=SemptomAnalizLocal.db";
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-{
-    if (usePostgres)
-        opt.UseNpgsql(conn);
-    else
-        opt.UseSqlite(conn);
-});
-builder.Services.AddScoped<IAnalizDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+    opt.UseNpgsql(conn)
+       .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddIdentity<Kullanici, IdentityRole>(opt =>
 {
     opt.Password.RequireDigit = true;
-    opt.Password.RequiredLength = 8;
-    opt.Password.RequireLowercase = true;
-    opt.Password.RequireNonAlphanumeric = true;
-    opt.Password.RequireUppercase = true;
-    opt.SignIn.RequireConfirmedEmail = false;
-    opt.Lockout.AllowedForNewUsers = true;
-    opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
-    opt.Lockout.MaxFailedAccessAttempts = 5;
+    opt.Password.RequiredLength = 6;
+    opt.Password.RequireNonAlphanumeric = false;
+    opt.Password.RequireUppercase = false;
+    opt.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
@@ -89,20 +70,7 @@ builder.Services.ConfigureApplicationCookie(opt =>
 });
 
 builder.Services.AddScoped<IAnalizService, AnalizMotoru>();
-builder.Services.AddSingleton<IBmiService, BmiService>();
-builder.Services.AddSingleton<ISemptomImzaService, SemptomImzaService>();
-builder.Services.AddSingleton<IAciliyetService, AciliyetService>();
-builder.Services.AddScoped<IBayesianAnalizService, BayesianAnalizService>();
-builder.Services.AddScoped<ITekrarAnalizService, TekrarAnalizService>();
-builder.Services.AddSingleton<IAnalizMetinService, AnalizMetinService>();
-builder.Services.AddSingleton<IGunlukOneriService, GunlukOneriService>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.Configure<KritikSemptomOptions>(
-    builder.Configuration.GetSection("KritikSemptomlar"));
-builder.Services.AddControllersWithViews(options =>
-{
-    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
-});
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -113,15 +81,15 @@ using (var scope = app.Services.CreateScope())
     var um = scope.ServiceProvider.GetRequiredService<UserManager<Kullanici>>();
     var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var adminPwd = app.Configuration["Seed:AdminPassword"];
-
-    // SQLite: migration dosyaları SQLite'a özel olduğu için MigrateAsync kullan
-    // PostgreSQL: migration'lar uyumsuz, doğrudan EnsureCreated ile tablo oluştur
-    if (usePostgres)
-        await db.Database.EnsureCreatedAsync();
-    else
-        await db.Database.MigrateAsync();
-
-    await DbSeeder.SeedAsync(db, um, rm, adminPwd, seedDemoUsers: app.Environment.IsDevelopment());
+    try
+    {
+        await DbSeeder.SeedAsync(db, um, rm, adminPwd);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabanı seed işlemi sırasında hata oluştu.");
+    }
 }
 
 if (!app.Environment.IsDevelopment())
@@ -142,10 +110,10 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -154,28 +122,3 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-static string BuildNpgsqlConnectionString(string databaseUrl)
-{
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':', 2);
-    if (userInfo.Length != 2)
-        throw new InvalidOperationException("DATABASE_URL kullanici adi ve parola icermelidir.");
-
-    var database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/'));
-    if (string.IsNullOrWhiteSpace(database))
-        throw new InvalidOperationException("DATABASE_URL veritabani adini icermelidir.");
-
-    var builder = new NpgsqlConnectionStringBuilder
-    {
-        Host = uri.Host,
-        Port = uri.Port > 0 ? uri.Port : 5432,
-        Database = database,
-        Username = Uri.UnescapeDataString(userInfo[0]),
-        Password = Uri.UnescapeDataString(userInfo[1]),
-        SslMode = SslMode.Require,
-        Pooling = true
-    };
-
-    return builder.ConnectionString;
-}

@@ -108,7 +108,8 @@ public class AnalizController(
 
         // Yetki kontrolü
         var kullanici = await userManager.GetUserAsync(User);
-        if (sonuc.AnalizOturumu.KullaniciId != kullanici!.Id && !User.IsInRole("Admin"))
+        if (kullanici == null) return RedirectToAction("Giris", "Hesap");
+        if (sonuc.AnalizOturumu.KullaniciId != kullanici.Id && !User.IsInRole("Admin"))
             return Forbid();
 
         var (etiket, renk, arkaPlan) = sonuc.AciliyetSeviyesi switch
