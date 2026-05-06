@@ -69,7 +69,18 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.SlidingExpiration = true;
 });
 
+builder.Services.AddScoped<SemptomAnalizApp.Core.Interfaces.IAnalizDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+
+// Bütün Service Bağımlılıkları
+builder.Services.AddScoped<IAciliyetService, AciliyetService>();
+builder.Services.AddScoped<IAnalizMetinService, AnalizMetinService>();
+builder.Services.AddScoped<IBayesianAnalizService, BayesianAnalizService>();
+builder.Services.AddScoped<IBmiService, BmiService>();
+builder.Services.AddScoped<IGunlukOneriService, GunlukOneriService>();
+builder.Services.AddScoped<ISemptomImzaService, SemptomImzaService>();
+builder.Services.AddScoped<ITekrarAnalizService, TekrarAnalizService>();
 builder.Services.AddScoped<IAnalizService, AnalizMotoru>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

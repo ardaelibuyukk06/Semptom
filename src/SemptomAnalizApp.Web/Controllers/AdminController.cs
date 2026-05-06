@@ -40,13 +40,30 @@ public class AdminController(
             .OrderByDescending(o => o.OlusturulmaTarihi)
             .Take(10)
             .ToListAsync();
+            
+        // Ekstra Detaylı Veriler
+        var dikkatSayisi = aciliyetDagilim.FirstOrDefault(d => d.Seviye == AciliyetSeviyesi.Dikkat)?.Sayi ?? 0;
+        var normalSayisi = aciliyetDagilim.FirstOrDefault(d => d.Seviye == AciliyetSeviyesi.Normal)?.Sayi ?? 0;
+        var izleSayisi = aciliyetDagilim.FirstOrDefault(d => d.Seviye == AciliyetSeviyesi.Izle)?.Sayi ?? 0;
+        
+        var topSemptomlar = await db.AnalizSemptomlari
+            .Include(os => os.SemptomKatalog)
+            .GroupBy(os => os.SemptomKatalog.Ad)
+            .Select(g => new { Ad = g.Key, Sayi = g.Count() })
+            .OrderByDescending(g => g.Sayi)
+            .Take(5)
+            .ToDictionaryAsync(g => g.Ad, g => g.Sayi);
 
         ViewBag.ToplamKullanici = toplamKullanici;
         ViewBag.ToplamAnaliz = toplamAnaliz;
         ViewBag.BugunGiris = bugunGiris;
         ViewBag.AcilSayisi = aciliyetDagilim.FirstOrDefault(d => d.Seviye == AciliyetSeviyesi.Acil)?.Sayi ?? 0;
+        ViewBag.DikkatSayisi = dikkatSayisi;
+        ViewBag.NormalSayisi = normalSayisi;
+        ViewBag.IzleSayisi = izleSayisi;
         ViewBag.Kullanicilar = kullanicilar;
         ViewBag.SonAnalizler = sonAnalizler;
+        ViewBag.TopSemptomlar = topSemptomlar;
 
         return View();
     }
