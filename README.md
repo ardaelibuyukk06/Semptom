@@ -11,61 +11,59 @@ ASP.NET Core 9 MVC + PostgreSQL (Supabase) + Clean Architecture.
 
 ---
 
-## Klasör Yapısı
+## Klasör Yapısı ve Belgeler
+
+Proje, teslim kısıtları ve "Proje Klasör Yapısı" şablonuna birebir uyacak şekilde fiziksel olarak yapılandırılmıştır:
 
 ```
 SemptomAnalizApp/
-├── docs/                            # Proje belgeleri
-│   ├── GereksinimAnalizi.md         # Gereksinim analizi dokümanı
-│   ├── ModulerTasarim.md            # Modüler sistem tasarımı
-│   └── UML/
-│       ├── UseCaseDiagram.puml      # Use Case diyagramı (PlantUML)
-│       └── ClassDiagram.puml        # Sınıf diyagramı (PlantUML)
+├── docs/                            # Akademik Belgeler
+│   ├── GereksinimAnalizi.pdf        # Gereksinim Analizi Raporu (PDF)
+│   ├── UML_Diyagramlari.pdf         # Use Case ve Sınıf Diyagramları (PDF)
+│   ├── ModulerTasarim.pdf           # Modüler Sistem Tasarımı Raporu (PDF)
+│   └── SemptomAnaliz-Dokumantasyon.pdf # Genel Proje Raporu (PDF)
 │
-├── src/
-│   ├── SemptomAnalizApp.Core/       # Domain katmanı (Entity, Enum, Interface)
-│   │   ├── Entities/
-│   │   ├── Enums/
-│   │   └── Interfaces/
-│   │
-│   ├── SemptomAnalizApp.Data/       # Veri erişim katmanı
-│   │   ├── Migrations/
-│   │   ├── Repositories/
-│   │   ├── AppDbContext.cs
-│   │   ├── DbSeeder.cs
-│   │   └── UnitOfWork.cs
-│   │
-│   ├── SemptomAnalizApp.Service/    # İş mantığı katmanı
-│   │   ├── Interfaces/              # IAnalizService ve alt servis sözleşmeleri
-│   │   └── Services/                # AnalizMotoru + küçük analiz servisleri
-│   │
-│   ├── SemptomAnalizApp.Web/        # Sunum katmanı (MVC)
-│   │   ├── Controllers/
-│   │   ├── ViewModels/
-│   │   ├── Views/
-│   │   ├── wwwroot/
-│   │   ├── Program.cs
-│   │   └── appsettings.json
-│   │
-│   └── SemptomAnalizApp.Tests/      # Birim testler (27 xUnit testi)
+├── src/                             # Kaynak Kod Klasörü
+│   ├── core/                        # Domain Katmanı (Modeller, Soyut Sınıflar, Interfaces)
+│   ├── modules/                     # Özellik Modülleri (Ölçeklenebilir yapılar)
+│   ├── services/                    # İş Mantığı Katmanı (Hesaplama motorları, servisler)
+│   ├── data/                        # Veri Erişim Katmanı (Context, Repositories, Migrations)
+│   ├── ui/                          # Sunum Katmanı (Controllers, Views, wwwroot)
+│   └── utils/                       # Yardımcı Araçlar ve Fonksiyonlar
 │
-├── SemptomAnalizApp.sln
-├── README.md
-└── .gitignore
+├── assets/                          # Medya ve Statik Varlıklar
+│   ├── images/                      # Görsel kaynaklar
+│   ├── sounds/                      # Ses dosyaları
+│   └── icons/                       # İkon dosyaları
+│
+├── data/                            # Örnek Veri Setleri
+│   └── data/                        # Örnek CSV, JSON veya veri dosyaları
+│
+├── tests/                           # Birim Test Katmanı
+│   └── SemptomAnalizApp.Tests.csproj # xUnit birim testleri (27 test senaryosu)
+│
+├── SemptomAnalizApp.sln             # Visual Studio Çözüm Dosyası
+└── README.md                        # Çalıştırma ve Kurulum Talimatı
 ```
+
+*   **Gereksinim Analizi Raporu (PDF):** [docs/GereksinimAnalizi.pdf](docs/GereksinimAnalizi.pdf)
+*   **UML Tasarım Diyagramları (PDF):** [docs/UML_Diyagramlari.pdf](docs/UML_Diyagramlari.pdf)
+*   **Modüler Sistem Tasarımı Raporu (PDF):** [docs/ModulerTasarim.pdf](docs/ModulerTasarim.pdf)
+*   **Genel Proje Raporu (PDF):** [docs/SemptomAnaliz-Dokumantasyon.pdf](docs/SemptomAnaliz-Dokumantasyon.pdf)
 
 ---
 
-## OOP Özellikleri
+## OOP Özellikleri ve Hata Yönetimi
 
-| OOP Kavramı | Uygulama |
+| OOP / Tasarım Kavramı | Uygulama Yöntemi |
 |-------------|----------|
-| **Kalıtım** | `BaseEntity` abstract sınıf → `AnalizOturumu`, `Semptom`, `Hastalik` vb. türev sınıflar |
-| **Kalıtım** | `Kullanici` → `IdentityUser`'dan miras alır |
-| **Polymorphism** | `IAnalizService` arayüzü → `AnalizMotoru` implementasyonu |
-| **Polymorphism** | `IGenericRepository<T>` → `GenericRepository<T>` implementasyonu |
-| **Encapsulation** | `AnalizMotoru` yalnızca analiz akışını yönetir; BMI, imza, Bayes, aciliyet, tekrar ve öneri hesapları küçük servislerde saklanır |
-| **Encapsulation** | Repository'ler `protected readonly DbSet<T>` ile korunmuş |
+| **Kalıtım (Inheritance)** | `BaseEntity` soyut sınıfı -> `AnalizOturumu`, `Semptom`, `Hastalik` vb. tüm veri modellerine temel teşkil eder. |
+| **Kalıtım (Inheritance)** | `Kullanici` -> ASP.NET Core Identity altyapısındaki `IdentityUser` sınıfından miras alır. |
+| **Çok Biçimlilik (Polymorphism)** | `IAnalizService` arayüzü -> Somut `AnalizMotoru` implementasyonu. Kontrolcüler sadece soyut arayüze bağımlıdır. |
+| **Çok Biçimlilik (Polymorphism)** | `IGenericRepository<T>` arayüzü -> Somut `GenericRepository<T>` implementasyonu. |
+| **Kapsülleme (Encapsulation)** | `AnalizMotoru` yalnızca genel iş akışını yönetir; BMI, Bayes, aciliyet, tekrar ve öneri hesaplama mantığı alt servislerde gizlenmiştir. |
+| **Kapsülleme (Encapsulation)** | `GenericRepository<T>` içindeki `DbSet<T>` veri kümesi dış dünyaya kapatılarak `protected readonly DbSet<T>` olarak korunmuştur. |
+| **Hata Yönetimi (Robustness)** | Tüm kullanıcı girişleri, DB bağlantıları ve form verileri Controller metotlarında `try-catch` blokları ve ModelState doğrulamalarıyla korunur. |
 
 ---
 
@@ -109,7 +107,7 @@ cd SemptomAnalizApp
 ### 2. Konfigürasyon
 
 ```bash
-cp src/SemptomAnalizApp.Web/appsettings.example.json src/SemptomAnalizApp.Web/appsettings.json
+cp src/ui/appsettings.example.json src/ui/appsettings.json
 ```
 
 `appsettings.json` içinde düzenle:
@@ -128,7 +126,7 @@ cp src/SemptomAnalizApp.Web/appsettings.example.json src/SemptomAnalizApp.Web/ap
 ### 3. Çalıştır
 
 ```bash
-dotnet run --project src/SemptomAnalizApp.Web
+dotnet run --project src/ui
 ```
 
 Uygulama adresleri:

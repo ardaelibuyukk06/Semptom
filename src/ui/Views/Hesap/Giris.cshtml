@@ -1,0 +1,59 @@
+@model SemptomAnalizApp.Web.ViewModels.GirisViewModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="sa-auth-card sa-anim-fadein">
+        <div class="text-center mb-4">
+            <div style="width:56px;height:56px;background:var(--sa-primary-lt);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary);font-size:1.5rem;margin:0 auto 16px">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="font-size:1.4rem">Tekrar Hoş Geldiniz</h2>
+            <p class="small" style="color:#A0BCD8">Hesabınıza giriş yapın.</p>
+        </div>
+
+        <form asp-controller="Hesap" asp-action="Giris" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0 small"></div>
+
+            @if (TempData["EmailDogrulamaLinki"] is string dogrulamaLinki)
+            {
+                <div class="alert alert-info rounded-3 border-0 small">
+                    <div class="fw-semibold mb-1">Geliştirme doğrulama bağlantısı</div>
+                    <a href="@dogrulamaLinki" class="alert-link">E-posta adresimi doğrula</a>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="Email">E-posta</label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="ornek@mail.com" autofocus />
+                <span asp-validation-for="Email" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="sa-form-label" asp-for="Sifre">Şifre</label>
+                <input asp-for="Sifre" class="form-control" type="password" placeholder="Şifreniz" />
+                <span asp-validation-for="Sifre" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <label class="d-flex align-items-center gap-2 small text-muted" style="cursor:pointer">
+                    <input asp-for="BeniHatirla" type="checkbox" class="form-check-input mt-0" />
+                    Beni hatırla
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+            </button>
+        </form>
+
+        <div class="sa-divider"></div>
+        <p class="text-center text-muted small mb-0">
+            Hesabınız yok mu?
+            <a asp-controller="Hesap" asp-action="Kayit" class="text-primary fw-semibold">Ücretsiz Kayıt Ol</a>
+        </p>
+    </div>
+</div>

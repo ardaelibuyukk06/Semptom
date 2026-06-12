@@ -1,0 +1,112 @@
+@model SemptomAnalizApp.Web.ViewModels.ProfilViewModel
+@{
+    ViewData["Title"] = "Sağlık Profili";
+    var kronikListesi = ViewBag.KronikHastaliklar as List<string> ?? new List<string>();
+}
+
+<div class="container py-4" style="max-width:780px">
+    <div class="sa-anim-fadein mb-4">
+        <p class="sa-section-title">Kişisel Profil</p>
+        <h1 class="sa-page-title">Sağlık Profilim</h1>
+        <p class="small" style="color:#A0BCD8">Bu bilgiler analiz sonuçlarını kişiselleştirmek için kullanılır.</p>
+    </div>
+
+    <form asp-controller="Profil" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Kişisel Bilgiler -->
+        <div class="sa-card mb-4 sa-anim-fadein-d1">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width:32px;height:32px;background:var(--sa-primary-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary)">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <p class="sa-section-title mb-0">Kişisel Bilgiler</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="sa-form-label" asp-for="Yas">Yaş</label>
+                    <input asp-for="Yas" class="form-control" type="number" min="1" max="120" placeholder="Örn: 28" />
+                    <span asp-validation-for="Yas" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="sa-form-label" asp-for="Cinsiyet">Cinsiyet</label>
+                    <select asp-for="Cinsiyet" class="form-select">
+                        <option value="">Seçiniz...</option>
+                        <option value="Erkek">Erkek</option>
+                        <option value="Kadın">Kadın</option>
+                        <option value="Diğer">Diğer / Belirtmek istemiyorum</option>
+                    </select>
+                    <span asp-validation-for="Cinsiyet" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vücut Ölçüleri -->
+        <div class="sa-card mb-4 sa-anim-fadein-d2">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width:32px;height:32px;background:rgba(5,150,105,0.14);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#34D399">
+                    <i class="bi bi-rulers"></i>
+                </div>
+                <p class="sa-section-title mb-0">Vücut Ölçüleri</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="sa-form-label" asp-for="Boy">Boy (cm)</label>
+                    <input asp-for="Boy" id="Boy" class="form-control" type="number" step="0.1" min="50" max="250" placeholder="Örn: 175" />
+                    <span asp-validation-for="Boy" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="sa-form-label" asp-for="Kilo">Kilo (kg)</label>
+                    <input asp-for="Kilo" id="Kilo" class="form-control" type="number" step="0.1" min="10" max="500" placeholder="Örn: 72" />
+                    <span asp-validation-for="Kilo" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <div id="bmiBox" style="display:none;background:var(--sa-bg-raised);border:1px solid var(--sa-border);border-radius:var(--sa-radius-sm);padding:16px"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kronik Hastalıklar -->
+        <div class="sa-card mb-4 sa-anim-fadein-d3">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width:32px;height:32px;background:rgba(217,119,6,0.14);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#FCD34D">
+                    <i class="bi bi-clipboard2-pulse-fill"></i>
+                </div>
+                <p class="sa-section-title mb-0">Kronik Hastalıklar</p>
+            </div>
+            <div class="row g-2">
+                @foreach (var hastalik in kronikListesi)
+                {
+                    <div class="col-6 col-md-4">
+                        <label class="d-flex align-items-center gap-2 p-2 rounded-2 border" style="cursor:pointer;font-size:.85rem;transition:background .15s"
+                               onmouseover="this.style.background='var(--sa-primary-lt)'" onmouseout="this.style.background='transparent'">
+                            <input type="checkbox"
+                                   name="SeciliKronikHastaliklar"
+                                   value="@hastalik"
+                                   class="form-check-input mt-0"
+                                   @(Model.SeciliKronikHastaliklar.Contains(hastalik) ? "checked" : "") />
+                            @hastalik
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Notlar -->
+        <div class="sa-card mb-4 sa-anim-fadein-d4">
+            <label class="sa-form-label" asp-for="Notlar">
+                <i class="bi bi-sticky me-1"></i>Ek Notlar
+                <span class="text-muted fw-normal">(isteğe bağlı)</span>
+            </label>
+            <textarea asp-for="Notlar" class="form-control" rows="3"
+                      placeholder="Örn: Aile geçmişi, ilaç kullanımı veya eklemek istediğiniz bilgiler..."></textarea>
+        </div>
+
+        <div class="d-flex gap-3 sa-anim-fadein-d5">
+            <button type="submit" class="btn btn-primary px-5">
+                <i class="bi bi-check-lg me-2"></i>Profili Kaydet
+            </button>
+            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-outline-secondary">İptal</a>
+        </div>
+    </form>
+</div>

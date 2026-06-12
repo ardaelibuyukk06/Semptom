@@ -1,0 +1,413 @@
+@using SemptomAnalizApp.Core.Entities
+@using SemptomAnalizApp.Core.Enums
+@{
+    ViewData["Title"] = "Gelişmiş Yönetim Merkezi";
+    var kullanicilar = ViewBag.Kullanicilar as List<Kullanici> ?? [];
+    var sonAnalizler = ViewBag.SonAnalizler as List<AnalizOturumu> ?? [];
+    var topSemptomlar = ViewBag.TopSemptomlar as Dictionary<string, int> ?? new Dictionary<string, int>();
+    
+    int acilSayisi = ViewBag.AcilSayisi ?? 0;
+    int dikkatSayisi = ViewBag.DikkatSayisi ?? 0;
+    int izleSayisi = ViewBag.IzleSayisi ?? 0;
+    int normalSayisi = ViewBag.NormalSayisi ?? 0;
+    int toplamOturum = ViewBag.ToplamAnaliz ?? 0;
+    
+    // Yüzde hesaplamaları
+    double acilYuzde = toplamOturum > 0 ? (acilSayisi * 100.0) / toplamOturum : 0;
+    double dikkatYuzde = toplamOturum > 0 ? (dikkatSayisi * 100.0) / toplamOturum : 0;
+    double izleYuzde = toplamOturum > 0 ? (izleSayisi * 100.0) / toplamOturum : 0;
+    double normalYuzde = toplamOturum > 0 ? (normalSayisi * 100.0) / toplamOturum : 0;
+}
+
+<style>
+    /* Premium & Detailed Admin Dashboard Styles */
+    .sa-admin-header {
+        position: relative;
+        padding: 2.5rem 2rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(244, 63, 94, 0.05) 100%);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .sa-admin-header::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 60%);
+        pointer-events: none;
+    }
+    
+    .sa-stat-premium {
+        background: var(--sa-bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        height: 100%;
+    }
+    .sa-stat-premium:hover {
+        transform: translateY(-5px);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+    
+    .sa-progress-stacked {
+        display: flex;
+        height: 12px;
+        overflow: hidden;
+        background-color: rgba(255,255,255,0.05);
+        border-radius: 10px;
+    }
+    
+    .sa-symptom-bar-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .sa-symptom-label {
+        width: 140px;
+        font-size: 0.85rem;
+        color: var(--sa-text-sec);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .sa-symptom-bar {
+        flex-grow: 1;
+        height: 8px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0 1rem;
+    }
+    .sa-symptom-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        border-radius: 4px;
+    }
+    
+    .sa-table-premium { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .sa-table-premium th { color: var(--sa-text-sec); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 0 1rem 0.5rem; border: none; }
+    .sa-table-premium td { background: rgba(255, 255, 255, 0.02); padding: 1rem; vertical-align: middle; border-top: 1px solid rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.02); transition: background 0.2s; }
+    .sa-table-premium tr td:first-child { border-left: 1px solid rgba(255,255,255,0.02); border-radius: 12px 0 0 12px; }
+    .sa-table-premium tr td:last-child { border-right: 1px solid rgba(255,255,255,0.02); border-radius: 0 12px 12px 0; }
+    .sa-table-premium tbody tr:hover td { background: rgba(255, 255, 255, 0.05); }
+    
+    .sa-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; color: #fff; }
+    
+    .sa-badge-danger { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .sa-badge-warning { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sa-badge-info { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .sa-badge-success { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+</style>
+
+<div class="container py-4">
+    
+    @if(TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger rounded-4 border-0 mb-4 sa-anim-fadein">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>@TempData["Hata"]
+        </div>
+    }
+    @if(TempData["Basarili"] != null)
+    {
+        <div class="alert alert-success rounded-4 border-0 mb-4 sa-anim-fadein" style="background: rgba(34,197,94,0.15); color: #4ade80;">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Basarili"]
+        </div>
+    }
+
+    <!-- Premium Header & System Health -->
+    <div class="sa-admin-header d-flex flex-column flex-xl-row align-items-xl-center justify-content-between sa-anim-fadein">
+        <div class="mb-4 mb-xl-0 position-relative z-1">
+            <span class="badge" style="background: rgba(99,102,241,0.2); color: #a5b4fc; margin-bottom: 8px;">
+                <i class="bi bi-cpu-fill me-1"></i>Sistem Kontrol &amp; Analitik
+            </span>
+            <h1 class="fw-bold mb-1" style="font-size: 2.2rem; color: #fff; letter-spacing:-0.5px;">Gelişmiş Yönetim Paneli</h1>
+            <p class="mb-0" style="color: var(--sa-text-sec);">Tüm veritabanı akışını, sağlık metriklerini ve sistem yükünü tek ekrandan izleyin.</p>
+        </div>
+        
+        <!-- System Health Indicators -->
+        <div class="position-relative z-1 d-flex gap-3">
+            <div class="px-4 py-3 rounded-4 text-center" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(34,197,94,0.3); backdrop-filter: blur(10px);">
+                <div class="text-success mb-1"><i class="bi bi-hdd-network-fill fs-5"></i></div>
+                <div class="fw-bold text-white">Database</div>
+                <div class="small" style="color:#4ade80">Bağlı (PostgreSQL)</div>
+            </div>
+            <div class="px-4 py-3 rounded-4 text-center" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.3); backdrop-filter: blur(10px);">
+                <div class="text-info mb-1"><i class="bi bi-shield-check fs-5"></i></div>
+                <div class="fw-bold text-white">Güvenlik</div>
+                <div class="small" style="color:#7dd3fc">Optimum</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards Overview -->
+    <div class="row g-4 mb-4">
+        <!-- 1. Kullanıcı İstatistiği -->
+        <div class="col-12 col-md-6 col-xl-3 sa-anim-fadein-d1">
+            <div class="sa-stat-premium d-flex align-items-center gap-4">
+                <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #4f46e5, #818cf8); display:flex; align-items:center; justify-content:center; color:white; font-size:1.8rem; box-shadow: 0 10px 20px rgba(79,70,229,0.3);">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white" style="font-size: 2.2rem; line-height: 1;">@ViewBag.ToplamKullanici</div>
+                    <div class="small fw-semibold mt-1" style="color:var(--sa-text-sec)">KAYITLI KULLANICI</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. Toplam Analiz -->
+        <div class="col-12 col-md-6 col-xl-3 sa-anim-fadein-d2">
+            <div class="sa-stat-premium d-flex align-items-center gap-4">
+                <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #10b981, #34d399); display:flex; align-items:center; justify-content:center; color:white; font-size:1.8rem; box-shadow: 0 10px 20px rgba(16,185,129,0.3);">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white" style="font-size: 2.2rem; line-height: 1;">@ViewBag.ToplamAnaliz</div>
+                    <div class="small fw-semibold mt-1" style="color:var(--sa-text-sec)">İŞLENEN ANALİZ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Yeni Kayıtlar -->
+        <div class="col-12 col-md-6 col-xl-3 sa-anim-fadein-d3">
+            <div class="sa-stat-premium d-flex align-items-center gap-4">
+                <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #f59e0b, #fbbf24); display:flex; align-items:center; justify-content:center; color:white; font-size:1.8rem; box-shadow: 0 10px 20px rgba(245,158,11,0.3);">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white" style="font-size: 2.2rem; line-height: 1;">@ViewBag.BugunGiris</div>
+                    <div class="small fw-semibold mt-1" style="color:var(--sa-text-sec)">SON 24 SAAT KAYIT</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Kritik Durumlar -->
+        <div class="col-12 col-md-6 col-xl-3 sa-anim-fadein-d4">
+            <div class="sa-stat-premium d-flex align-items-center gap-4" style="border-color: rgba(244,63,94,0.2);">
+                <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #f43f5e, #fb7185); display:flex; align-items:center; justify-content:center; color:white; font-size:1.8rem; box-shadow: 0 10px 20px rgba(244,63,94,0.3);">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-danger" style="font-size: 2.2rem; line-height: 1;">@ViewBag.AcilSayisi</div>
+                    <div class="small fw-semibold mt-1" style="color:var(--sa-text-sec)">ACİL VAKA TESPİTİ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="row g-4 mb-5">
+        
+        <!-- Aciliyet Dağılımı -->
+        <div class="col-xl-6 sa-anim-fadein-d2">
+            <div class="sa-stat-premium">
+                <h5 class="text-white fw-bold mb-4"><i class="bi bi-pie-chart-fill text-info me-2"></i>Sistem Geneli Aciliyet Dağılımı</h5>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="small" style="color:var(--sa-text-sec)">Tüm Analiz Sonuçlarının Kategorizasyonu</span>
+                    <span class="small fw-bold text-white">Toplam: @toplamOturum</span>
+                </div>
+                
+                <div class="sa-progress-stacked mb-4">
+                    <div style="width: @acilYuzde.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; background: #f43f5e;"></div>
+                    <div style="width: @dikkatYuzde.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; background: #f59e0b;"></div>
+                    <div style="width: @izleYuzde.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; background: #38bdf8;"></div>
+                    <div style="width: @normalYuzde.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; background: #22c55e;"></div>
+                </div>
+                
+                <div class="row text-center g-2">
+                    <div class="col-3">
+                        <div class="p-2 rounded-3" style="background: rgba(244,63,94,0.1)">
+                            <div class="fw-bold text-white">@acilYuzde.ToString("0")%</div>
+                            <div style="color:#f43f5e; font-size:0.75rem">Acil (@acilSayisi)</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 rounded-3" style="background: rgba(245,158,11,0.1)">
+                            <div class="fw-bold text-white">@dikkatYuzde.ToString("0")%</div>
+                            <div style="color:#f59e0b; font-size:0.75rem">Dikkat (@dikkatSayisi)</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 rounded-3" style="background: rgba(56,189,248,0.1)">
+                            <div class="fw-bold text-white">@izleYuzde.ToString("0")%</div>
+                            <div style="color:#38bdf8; font-size:0.75rem">İzle (@izleSayisi)</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 rounded-3" style="background: rgba(34,197,94,0.1)">
+                            <div class="fw-bold text-white">@normalYuzde.ToString("0")%</div>
+                            <div style="color:#22c55e; font-size:0.75rem">Normal (@normalSayisi)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Semptomlar -->
+        <div class="col-xl-6 sa-anim-fadein-d3">
+            <div class="sa-stat-premium">
+                <h5 class="text-white fw-bold mb-4"><i class="bi bi-bar-chart-line-fill text-warning me-2"></i>En Sık Görülen Şikayetler</h5>
+                @if(topSemptomlar.Any())
+                {
+                    int maxCount = topSemptomlar.Max(x => x.Value);
+                    foreach(var semptom in topSemptomlar)
+                    {
+                        double width = maxCount > 0 ? (semptom.Value * 100.0) / maxCount : 0;
+                        <div class="sa-symptom-bar-container">
+                            <div class="sa-symptom-label" title="@semptom.Key">@semptom.Key</div>
+                            <div class="sa-symptom-bar">
+                                <div class="sa-symptom-fill" style="width: @width.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%;"></div>
+                            </div>
+                            <div class="fw-bold text-white" style="font-size:0.85rem; width:30px; text-align:right;">@semptom.Value</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Henüz yeterli semptom verisi oluşmadı.</p>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Veri Tabloları -->
+    <div class="row g-4">
+        
+        <!-- Kullanıcı Yönetimi -->
+        <div class="col-xl-6 sa-anim-fadein-d3">
+            <div class="sa-card h-100 p-4 border-0" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-white"><i class="bi bi-people text-primary me-2"></i>Kullanıcı Yönetimi</h5>
+                    <span class="badge bg-secondary rounded-pill">Son 20 Kayıt</span>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="sa-table-premium">
+                        <thead style="position: sticky; top: 0; background: #0f172a; z-index: 10;">
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Kayıt Tarihi</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var k in kullanicilar)
+                            {
+                                var initials = (!string.IsNullOrEmpty(k.Ad) ? k.Ad[..1] : "") + (!string.IsNullOrEmpty(k.Soyad) ? k.Soyad[..1] : "");
+                                var hash = Math.Abs(k.Email.GetHashCode()) % 5;
+                                string[] colors = { "#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6" };
+                                var bgColor = colors[hash];
+
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="sa-avatar shadow-sm" style="background: @bgColor;">
+                                                @initials.ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-white" style="font-size:0.9rem">@k.Ad @k.Soyad</div>
+                                                <div style="font-size:0.75rem; color:#a5b4fc;">@k.Email</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="color:var(--sa-text-sec); font-size:0.85rem">
+                                            @k.KayitTarihi.ToLocalTime().ToString("dd MMM yy HH:mm")
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-controller="Admin" asp-action="KullaniciSil" method="post" onsubmit="return confirm('Bu kullanıcıyı tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');">
+                                            <input type="hidden" name="id" value="@k.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:0.75rem">
+                                                <i class="bi bi-trash-fill me-1"></i>Sil
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Analizler / Canlı Akış -->
+        <div class="col-xl-6 sa-anim-fadein-d4">
+            <div class="sa-card h-100 p-4 border-0" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-white"><i class="bi bi-lightning-charge-fill text-success me-2"></i>Canlı Analiz Akışı</h5>
+                    <span class="badge bg-secondary rounded-pill">Son 10 İşlem</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="sa-table-premium">
+                        <thead>
+                            <tr>
+                                <th>Hasta Bilgisi</th>
+                                <th>Bulgular</th>
+                                <th class="text-end">Durum/Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in sonAnalizler)
+                            {
+                                string badgeClass = "sa-badge-success";
+                                string etiket = "Normal";
+                                if (o.AnalizSonucu != null)
+                                {
+                                    (etiket, badgeClass) = o.AnalizSonucu.AciliyetSeviyesi switch {
+                                        AciliyetSeviyesi.Acil    => ("Acil Müdahale", "sa-badge-danger"),
+                                        AciliyetSeviyesi.Dikkat  => ("Dikkat Gerekli", "sa-badge-warning"),
+                                        AciliyetSeviyesi.Izle    => ("İzlemde", "sa-badge-info"),
+                                        _ => ("Normal", "sa-badge-success")
+                                    };
+                                }
+                                
+                                var initials = (!string.IsNullOrEmpty(o.Kullanici?.Ad) ? o.Kullanici?.Ad[..1] : "U") + (!string.IsNullOrEmpty(o.Kullanici?.Soyad) ? o.Kullanici?.Soyad[..1] : "");
+                                
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="sa-avatar" style="width:28px;height:28px;font-size:0.7rem;background:rgba(255,255,255,0.1)">
+                                                @initials?.ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-white" style="font-size:0.85rem">@(o.Kullanici?.Ad ?? "Anonim")</div>
+                                                <div style="font-size:0.7rem; color:var(--sa-text-sec)">@o.OlusturulmaTarihi.ToLocalTime().ToString("HH:mm")</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach(var symp in o.AnalizSemptomlari.Select(s => s.SemptomKatalog?.Ad ?? "").Take(2))
+                                            {
+                                                <span class="badge" style="background:rgba(255,255,255,0.05); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); font-weight:500;">
+                                                    @symp
+                                                </span>
+                                            }
+                                            @if (o.AnalizSemptomlari.Count > 2) { 
+                                                <span class="badge" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">
+                                                    +@(o.AnalizSemptomlari.Count - 2)
+                                                </span> 
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge rounded-pill px-3 py-2 @badgeClass">
+                                            @etiket
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

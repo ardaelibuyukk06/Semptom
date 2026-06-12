@@ -1,0 +1,178 @@
+@model SemptomAnalizApp.Web.ViewModels.KayitViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="sa-auth-card sa-anim-fadein">
+        <div class="text-center mb-4">
+            <div style="width:56px;height:56px;background:var(--sa-primary-lt);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary);font-size:1.5rem;margin:0 auto 16px">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="font-size:1.4rem">Ücretsiz Hesap Oluştur</h2>
+            <p class="small" style="color:var(--sa-text-sec)">Hemen başlayın, ilk analizinizi yapın.</p>
+        </div>
+
+        <form asp-controller="Hesap" asp-action="Kayit" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0 small"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="sa-form-label" asp-for="Ad">Ad</label>
+                    <input asp-for="Ad" class="form-control" placeholder="Adınız" autofocus />
+                    <span asp-validation-for="Ad" class="text-danger" style="font-size:.78rem"></span>
+                </div>
+                <div class="col-6">
+                    <label class="sa-form-label" asp-for="Soyad">Soyad</label>
+                    <input asp-for="Soyad" class="form-control" placeholder="Soyadınız" />
+                    <span asp-validation-for="Soyad" class="text-danger" style="font-size:.78rem"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="Email">E-posta</label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="ornek@mail.com" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="Sifre">Şifre</label>
+                <input asp-for="Sifre" class="form-control" type="password" placeholder="En az 6 karakter" />
+                <span asp-validation-for="Sifre" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="sa-form-label" asp-for="SifreTekrar">Şifre Tekrar</label>
+                <input asp-for="SifreTekrar" class="form-control" type="password" placeholder="Şifrenizi tekrar girin" />
+                <span asp-validation-for="SifreTekrar" class="text-danger" style="font-size:.78rem"></span>
+            </div>
+
+            <!-- Onay Kutuları -->
+            <div class="mb-4 rounded-3 overflow-hidden" style="border:1px solid var(--sa-border)">
+
+                <!-- 1. KVKK -->
+                <div class="p-3" style="background:var(--sa-bg-raised);border-bottom:1px solid var(--sa-border)">
+                    <div class="form-check d-flex align-items-start gap-2">
+                        <input asp-for="KvkkOnay" class="form-check-input mt-1 flex-shrink-0" type="checkbox" />
+                        <label class="form-check-label" asp-for="KvkkOnay" style="font-size:.82rem;color:var(--sa-text-sec)">
+                            <a href="#" class="text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#kvkkModal">
+                                Gizlilik Politikası &amp; KVKK Aydınlatma Metni
+                            </a>'ni okudum ve kabul ediyorum. Sağlık verilerimin analiz amacıyla işleneceğini onaylıyorum.
+                        </label>
+                    </div>
+                    <span asp-validation-for="KvkkOnay" class="text-danger" style="font-size:.78rem;display:block;margin-top:4px;margin-left:24px"></span>
+                </div>
+
+                <!-- 2. Tıbbi Sorumluluk Reddi -->
+                <div class="p-3" style="background:rgba(244,63,94,0.05)">
+                    <div class="form-check d-flex align-items-start gap-2">
+                        <input asp-for="TibbiOnay" class="form-check-input mt-1 flex-shrink-0" type="checkbox"
+                               style="border-color:rgba(244,63,94,0.5)" />
+                        <label class="form-check-label" asp-for="TibbiOnay" style="font-size:.82rem;color:var(--sa-text-sec)">
+                            <i class="bi bi-exclamation-triangle-fill me-1" style="color:#F87171;font-size:.8rem"></i>
+                            Bu uygulamanın <strong style="color:var(--sa-text-pri)">tıbbi teşhis, tedavi veya tavsiye</strong>
+                            vermediğini; sonuçların yalnızca istatistiksel benzerlik analizi olduğunu anlıyor ve
+                            gerektiğinde bir sağlık profesyoneline başvuracağımı kabul ediyorum.
+                        </label>
+                    </div>
+                    <span asp-validation-for="TibbiOnay" class="text-danger" style="font-size:.78rem;display:block;margin-top:4px;margin-left:24px"></span>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-lightning-charge-fill me-2"></i>Hesap Oluştur
+            </button>
+        </form>
+
+        <div class="sa-divider"></div>
+        <p class="text-center text-muted small mb-0">
+            Zaten hesabınız var mı?
+            <a asp-controller="Hesap" asp-action="Giris" class="text-primary fw-semibold">Giriş Yap</a>
+        </p>
+    </div>
+</div>
+
+<!-- KVKK Modal -->
+<div class="modal fade" id="kvkkModal" tabindex="-1" aria-labelledby="kvkkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="background:var(--sa-bg-card);border:1px solid var(--sa-border);border-radius:16px">
+
+            <!-- Header -->
+            <div class="modal-header border-0 pb-0" style="background:var(--sa-bg-raised);border-radius:16px 16px 0 0">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:42px;height:42px;background:var(--sa-primary-lt);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--sa-primary);font-size:1.2rem">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="kvkkModalLabel" style="color:var(--sa-text-pri)">
+                            Gizlilik Politikası &amp; KVKK Aydınlatma Metni
+                        </h5>
+                        <small style="color:var(--sa-text-sec)">6698 Sayılı Kişisel Verilerin Korunması Kanunu</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"
+                        style="filter: var(--sa-close-filter, none)"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body px-4 py-3" style="max-height:60vh;overflow-y:auto;color:var(--sa-text-sec);font-size:.88rem;line-height:1.7">
+
+                <div class="alert border-0 rounded-3 mb-4" style="background:rgba(99,102,241,0.08);color:var(--sa-text-pri)">
+                    <i class="bi bi-info-circle-fill me-2" style="color:var(--sa-primary)"></i>
+                    Bu metin, 6698 sayılı KVKK'nın 10. maddesi uyarınca hazırlanmış aydınlatma metnidir.
+                </div>
+
+                <h6 class="fw-bold mb-2" style="color:var(--sa-text-pri)">1. Veri Sorumlusu</h6>
+                <p>SemptomAnaliz uygulaması kapsamında kişisel verileriniz, uygulama yöneticisi tarafından işlenmektedir.</p>
+
+                <h6 class="fw-bold mb-2 mt-3" style="color:var(--sa-text-pri)">2. İşlenen Kişisel Veriler</h6>
+                <ul class="ps-3">
+                    <li><strong style="color:var(--sa-text-pri)">Kimlik:</strong> Ad, soyad</li>
+                    <li><strong style="color:var(--sa-text-pri)">İletişim:</strong> E-posta adresi</li>
+                    <li><strong style="color:var(--sa-text-pri)">Sağlık verisi (özel nitelikli):</strong> Yaş, cinsiyet, boy, kilo, kronik hastalıklar, seçilen semptomlar</li>
+                </ul>
+
+                <h6 class="fw-bold mb-2 mt-3" style="color:var(--sa-text-pri)">3. İşleme Amaçları</h6>
+                <ul class="ps-3">
+                    <li>İstatistiksel semptom benzerlik analizi yapılması</li>
+                    <li>Kullanıcıya önerilen sağlık bölümünün belirlenmesi</li>
+                    <li>Geçmiş analiz kayıtlarının tutulması</li>
+                    <li>Hesap güvenliğinin sağlanması</li>
+                </ul>
+
+                <h6 class="fw-bold mb-2 mt-3" style="color:var(--sa-text-pri)">4. Hukuki Dayanak</h6>
+                <p>Sağlık verileriniz KVKK m.6/3 kapsamında <strong style="color:var(--sa-text-pri)">açık rıza</strong> ile işlenmektedir.</p>
+
+                <h6 class="fw-bold mb-2 mt-3" style="color:var(--sa-text-pri)">5. Veri Güvenliği</h6>
+                <p>Verileriniz şifreli bağlantı (SSL/TLS) ile iletilmekte, güvenli veritabanında saklanmaktadır. Üçüncü taraflarla paylaşılmamaktadır.</p>
+
+                <h6 class="fw-bold mb-2 mt-3" style="color:var(--sa-text-pri)">6. KVKK Kapsamındaki Haklarınız</h6>
+                <ul class="ps-3">
+                    <li>Verilerinizin işlenip işlenmediğini öğrenme</li>
+                    <li>Verilerinize erişim ve düzeltme talep etme</li>
+                    <li>Verilerinizin silinmesini talep etme</li>
+                    <li>Rızanızı her zaman geri alma</li>
+                </ul>
+
+                <div class="mt-4 p-3 rounded-3" style="background:rgba(244,63,94,0.07);border:1px solid rgba(244,63,94,0.2)">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="color:#F87171"></i>
+                    <strong style="color:var(--sa-text-pri)">Önemli:</strong> Bu uygulama tıbbi teşhis veya tedavi önerisi sunmaz.
+                    Tüm çıktılar istatistiksel benzerlik analizi niteliğindedir.
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer border-0 pt-2" style="background:var(--sa-bg-raised);border-radius:0 0 16px 16px">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal"
+                        onclick="document.getElementById('KvkkOnay').checked=true">
+                    <i class="bi bi-check2-circle me-1"></i>Okudum, Onaylıyorum
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
